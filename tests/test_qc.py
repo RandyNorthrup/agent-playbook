@@ -234,6 +234,10 @@ class TestQcGate(QcCase):
         """Windows pipes default to a code page with no emoji. The report must still print (in UTF-8), with the
         right exit code and a receipt, instead of crashing mid-report."""
         text = "Notes \U0001F600 guaranteed to keep your plain markdown files where you put them"
+        lists = self.root / "qc" / "lists.json"  # a warning that quotes the draft, whatever the playbook's own lists say
+        data = json.loads(lists.read_text(encoding="utf-8"))
+        data.setdefault("never_say", {}).setdefault("_all", []).append({"pattern": "guaranteed", "why": "test", "severity": "warn"})
+        lists.write_text(json.dumps(data), encoding="utf-8")
         r = subprocess.run([sys.executable, str(PLAYBOOK / "qc.py"), "--root", str(self.root), "check", "--platform", "X",
                             "--account", "@sam", "--action", "post", "--text", text], capture_output=True, timeout=120,
                            env=dict(os.environ, PYTHONIOENCODING="cp1252"))
@@ -313,7 +317,7 @@ class TestQcGate(QcCase):
                  (lpath, lambda d: d["ad_copy"].append({"pattern": "[unclosed"}), "lists.json ad_copy"),
                  (lpath, lambda d: d["projects"].__setitem__("app", {"names": ["(x"]}), "projects.app.names"),
                  (lpath, lambda d: d.__setitem__("ignore", "Pat Example"), "lists.json ignore must be a list"),
-                 (lpath, lambda d: d["ignore"].append(5), "lists.json ignore[1] must be text")]
+                 (lpath, lambda d: d["ignore"].append(5), "must be text or {")]  # whatever the list's length
         for path, mutate, want in cases:
             data = json.loads(filters if path == fpath else lists)
             mutate(data)
