@@ -322,8 +322,11 @@ class TestAuditModel(unittest.TestCase):
                 "print(auditlog.local_day({'at': '2026-11-01T00:30:00-07:00'}))\n"
                 "print(auditlog.local_day({'at': '2026-03-08T01:30:00-08:00'}))\n"
                 "print(auditlog.local_day({'at': '1900-01-01T10:00:00Z'}) is not None)\n")
+        # POSIX systems get the rules spelled out: without the legacy zone file (Ubuntu 24.04 moved it to tzdata-legacy)
+        # the C library falls back to the 1987 US rules, under which summer time ended on the last Sunday of October
+        tz = "PST8PDT" if os.name == "nt" else "PST8PDT,M3.2.0,M11.1.0"
         r = subprocess.run([sys.executable, "-c", code, str(PLAYBOOK)], capture_output=True, text=True, timeout=60,
-                           env=dict(os.environ, TZ="PST8PDT"))
+                           env=dict(os.environ, TZ=tz))
         self.assertEqual(r.returncode, 0, r.stderr)
         if r.stdout.strip() == "no-dst":
             self.skipTest("this platform ignores TZ")

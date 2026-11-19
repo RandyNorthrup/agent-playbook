@@ -376,8 +376,11 @@ class TestOpen(ServerCase):
         self.assertEqual(self.post({"path": "~"})[0], 200)
         self.assertEqual(self.post({"path": "playbook/no/such"})[0], 404)
         self.assertEqual(self.post({"path": "relative\\folder"})[0], 404)
-        self.assertEqual(self.opened[:2], [os.path.join(skill, "playbook", "audit", "posts.jsonl"), os.path.expanduser("~")])
-        self.assertEqual(self.opened[2], os.path.join(skill, "playbook", "no", "such"))
+        def real(p):  # the server opens the real path: no 8.3 short names (Windows), no /var -> /private/var link (macOS)
+            return os.path.normcase(os.path.realpath(p))
+        self.assertEqual([real(p) for p in self.opened[:3]],
+                         [real(os.path.join(skill, "playbook", "audit", "posts.jsonl")), real(os.path.expanduser("~")),
+                          real(os.path.join(skill, "playbook", "no", "such"))])
 
     def test_open_missing_and_existing(self):
         missing = str(self.root / "no" / "such" / "place")
