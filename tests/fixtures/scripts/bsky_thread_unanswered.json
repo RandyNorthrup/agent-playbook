@@ -1,0 +1,47 @@
+{
+ "thread": {
+  "$type": "app.bsky.feed.defs#threadViewPost",
+  "post": {
+   "uri": "at://did:plc:maker/app.bsky.feed.post/3ccc111",
+   "cid": "bafy3ccc111",
+   "author": {
+    "did": "did:plc:maker",
+    "handle": "maker.example",
+    "displayName": "maker"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "text": "Top-level post in the feed",
+    "createdAt": "2026-11-09T08:00:00.000Z"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "indexedAt": "2026-11-09T08:00:00.000Z"
+  },
+  "replies": [
+   {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+     "uri": "at://did:plc:second/app.bsky.feed.post/3sec009",
+     "cid": "bafy3sec009",
+     "author": {
+      "did": "did:plc:second",
+      "handle": "second.example",
+      "displayName": "second"
+     },
+     "record": {
+      "$type": "app.bsky.feed.post",
+      "text": "Interesting",
+      "createdAt": "2026-11-09T08:10:00.000Z"
+     },
+     "replyCount": 0,
+     "repostCount": 0,
+     "likeCount": 0,
+     "indexedAt": "2026-11-09T08:10:00.000Z"
+    },
+    "replies": []
+   }
+  ]
+ }
+}

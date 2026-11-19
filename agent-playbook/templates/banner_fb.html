@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@700&family=SUSE+Mono:wght@400&display=block">
+<style>
+  /* Facebook cover, 1640x624. Mobile crops to the centre ~1110px, desktop puts the avatar bottom-left. */
+  html, body { margin: 0; padding: 0; background: #0d141c; }
+  .b {
+    position: relative; width: 1640px; height: 624px; overflow: hidden;
+    background:
+      radial-gradient(ellipse 980px 640px at 80% 16%, rgba(58, 84, 110, .55), transparent 70%),
+      linear-gradient(170deg, #24384a 0%, #17222f 55%, #0d141c 100%);
+  }
+  .grain {
+    position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+  .star { position: absolute; border-radius: 50%; background: #fefce6; }
+  .moon { position: absolute; top: 118px; left: 1440px; }
+  .moon div { position: absolute; border-radius: 50%; background: #fefce6; transform: translate(-50%, -50%); }
+  .core { width: 180px; height: 180px; box-shadow: 0 1px 40px #fff; }
+  .h2 { width: 360px; height: 360px; opacity: .10; }
+  .h3 { width: 540px; height: 540px; opacity: .066; }
+  .h4 { width: 720px; height: 720px; opacity: .05; }
+  .hill { position: absolute; border-radius: 34px; transform: rotate(45deg); box-shadow: 0 1px 34px #00000080; }
+  .text { position: absolute; left: 0; right: 0; top: 150px; text-align: center; }
+  h1 {
+    margin: 0; font-family: Oxanium, sans-serif; font-weight: 700; font-size: 86px; line-height: 1;
+    letter-spacing: -.02em;
+    background: linear-gradient(115deg, #e3a57b 0%, #b87045 45%, #c98357 70%, #e3a57b 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .45));
+  }
+  .sub {
+    margin-top: 28px; font-family: "SUSE Mono", monospace; font-size: 28px; line-height: 1.55;
+    color: #efe6d8; letter-spacing: .01em;
+  }
+  .url {
+    margin-top: 22px; font-family: "SUSE Mono", monospace; font-size: 23px; color: #d49062; letter-spacing: .06em;
+  }
+  .waves { position: absolute; left: 0; bottom: 0; width: 1640px; height: 86px; }
+</style>
+</head>
+<body>
+<div class="b">
+  <div id="stars"></div>
+  <div class="moon"><div class="h4"></div><div class="h3"></div><div class="h2"></div><div class="core"></div></div>
+  <div class="hill" style="width:1000px;height:1000px;left:-170px;top:540px;background:linear-gradient(to bottom right,#131e29,#2c3d4f)"></div>
+  <div class="hill" style="width:1000px;height:1000px;left:1000px;top:500px;background:linear-gradient(to bottom right,#131e29,#2a3a4d)"></div>
+  <div class="hill" style="width:1000px;height:1000px;left:360px;top:600px;background:linear-gradient(to top right,#101a24,#24384a)"></div>
+  <div class="text">
+    <h1>Your headline<br>Goes here</h1>
+    <div class="sub">One line about what you make<br>and who it is for.</div>
+    <div class="url">YOURSITE.EXAMPLE</div>
+  </div>
+  <svg class="waves" viewBox="0 0 1500 70" preserveAspectRatio="none">
+    <path d="M0 30 C 150 8, 300 44, 450 26 S 750 6, 900 28 S 1200 48, 1350 24 S 1480 14, 1500 20 L1500 70 L0 70 Z" fill="#8f4f2d"/>
+    <path d="M0 40 C 160 22, 320 56, 480 38 S 780 18, 940 40 S 1240 58, 1380 36 S 1480 30, 1500 34 L1500 70 L0 70 Z" fill="#b87045"/>
+    <path d="M0 54 C 180 40, 340 66, 520 52 S 820 36, 980 54 S 1260 68, 1400 52 S 1480 48, 1500 50 L1500 70 L0 70 Z" fill="#f0e8dc"/>
+  </svg>
+  <div class="grain"></div>
+</div>
+<script>
+  // deterministic star field
+  let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const box = document.getElementById('stars');
+  for (let i = 0; i < 90; i++) {
+    const d = document.createElement('div'); d.className = 'star';
+    const z = r() < .15 ? 2.8 : 1.6;
+    Object.assign(d.style, { left: r() * 1640 + 'px', top: r() * 470 + 'px', width: z + 'px', height: z + 'px', opacity: .25 + r() * .5 });
+    box.appendChild(d);
+  }
+</script>
+</body>
+</html>

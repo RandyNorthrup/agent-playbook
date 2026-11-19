@@ -1,0 +1,6 @@
+{
+ "kind": "step",
+ "title": "Log it",
+ "sub": "audit.py add, then update --verified",
+ "body": "- `python playbook/audit.py add --platform <P> --account <A> --action <post|reply|comment> --project <id> --url <link> --target <what it answered> --text-file <file> --promo|--no-promo`.\n- The words must match a passing `qc.py check` receipt (part part-qc-check).\n- After the live check: `python playbook/audit.py update <id> --status live --verified \"<how>\"`.\n- Write the platform and handle exactly as `python playbook/pb.py accounts` prints them."
+}

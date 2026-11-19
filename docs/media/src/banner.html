@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agent Playbook banner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  html, body { margin: 0; padding: 0; background: #0E1318; }
+  .b {
+    position: relative; width: 2560px; height: 800px; overflow: hidden;
+    background: #0E1318 url("key-art.png") no-repeat;
+    background-size: 1650px auto; background-position: right center;
+    font-family: "Schibsted Grotesk", system-ui, sans-serif; color: #E6EBF1;
+  }
+  /* fade the art into the text side so the title always reads */
+  .b::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, #0E1318 0%, #0E1318 26%, rgba(14,19,24,.75) 42%, rgba(14,19,24,0) 62%);
+  }
+  .text { position: absolute; left: 150px; top: 50%; transform: translateY(-50%); width: 1150px; }
+  .mark {
+    width: 108px; height: 108px; border-radius: 26px; display: grid; place-items: center;
+    background: #252E50; border: 2px solid #3A4A86; margin-bottom: 44px;
+    box-shadow: 0 0 60px rgba(130,151,255,.35);
+  }
+  .mark svg { width: 62px; height: 62px; stroke: #8297FF; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  h1 { margin: 0; font-size: 150px; line-height: 1; font-weight: 800; letter-spacing: -4px; }
+  .tag { margin: 34px 0 0; font-size: 46px; line-height: 1.3; font-weight: 500; color: #B3BECB; }
+  .tag b { color: #E6EBF1; font-weight: 700; }
+  .pills { display: flex; gap: 18px; margin-top: 46px; }
+  .pill {
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 26px; color: #B3BECB;
+    padding: 12px 22px; border-radius: 999px; border: 2px solid #2A3340; background: rgba(25,32,42,.85);
+  }
+  .pill i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 12px; vertical-align: 1px; }
+</style>
+</head>
+<body>
+<div class="b">
+  <div class="text">
+    <div class="mark"><svg viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg></div>
+    <h1>Agent Playbook</h1>
+    <p class="tag">Step-by-step flows your coding agent follows.<br><b>You edit them on a canvas.</b> Every draft passes QC.</p>
+    <div class="pills">
+      <span class="pill"><i style="background:#25915F"></i>Claude Code</span>
+      <span class="pill"><i style="background:#3864D2"></i>Codex</span>
+      <span class="pill"><i style="background:#C97A0E"></i>any agent</span>
+      <span class="pill"><i style="background:#7E4FCF"></i>Python 3.8+, stdlib only</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+ "label": "Screenshots",
+ "path": "~/AcmeNotes/assets/screenshots",
+ "kind": "images",
+ "note": "Real captures of the app, named by screen and version."
+}

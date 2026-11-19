@@ -1,0 +1,6 @@
+{
+ "kind": "check",
+ "title": "QC the draft",
+ "sub": "qc.py check before every send",
+ "body": "- `python playbook/qc.py check --platform <P> --account <A> --action <reply|post|comment> --text-file <draft> [--target <link>] [--project <id>] [--media <path>]`.\n- BLOCK: fix the draft and check again. ASK: answer with `--ok <id>=\"evidence\"`. WARN: it can go; it is on the receipt and in the run report.\n- `audit.py add` refuses a reply or post without a passing receipt for the same words.\n- A mistake that got past QC becomes a filter (flow playbook)."
+}

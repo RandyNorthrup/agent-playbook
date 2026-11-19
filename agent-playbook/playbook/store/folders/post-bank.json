@@ -1,0 +1,6 @@
+{
+ "label": "Post bank",
+ "path": "playbook/state/bank.tsv",
+ "kind": "playbook",
+ "note": "Ready-to-post originals: key, text, optional link."
+}

@@ -1,0 +1,95 @@
+{
+ "name": "X: replies",
+ "group": "Platforms",
+ "icon": "reply",
+ "summary": "Answer everyone waiting on X: find them, draft, QC, read back, send, log.",
+ "order": 2,
+ "nodes": [
+  {
+   "id": "xr-start",
+   "kind": "start",
+   "title": "Replies waiting",
+   "sub": "Notifications, last 2 days",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "xr-find",
+   "kind": "step",
+   "title": "Find what's waiting",
+   "sub": "All notifications, then each thread",
+   "body": "- Read the notifications tab in your own tab (part part-own-tab).\n- `python scripts/xthread.py <status id>` prints a thread without the browser.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "xr-draft",
+   "kind": "step",
+   "title": "Draft each reply",
+   "sub": "Answer what they said",
+   "body": "- One specific point per reply; no links unless asked (flow pacing).\n- Skip with a reason: off-topic, hostile, or already answered.",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "xr-qc",
+   "part": "part-qc-check",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "xr-read",
+   "part": "part-read-back",
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "xr-log",
+   "part": "part-log",
+   "x": 1700,
+   "y": 0
+  },
+  {
+   "id": "xr-done",
+   "kind": "output",
+   "title": "Everyone answered",
+   "sub": "Or skipped with a reason",
+   "x": 2040,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "xr-start",
+   "to": "xr-find",
+   "type": "flow"
+  },
+  {
+   "from": "xr-find",
+   "to": "xr-draft",
+   "type": "flow"
+  },
+  {
+   "from": "xr-draft",
+   "to": "xr-qc",
+   "type": "flow"
+  },
+  {
+   "from": "xr-qc",
+   "to": "xr-read",
+   "type": "flow",
+   "label": "pass"
+  },
+  {
+   "from": "xr-read",
+   "to": "xr-log",
+   "type": "flow",
+   "label": "sent"
+  },
+  {
+   "from": "xr-log",
+   "to": "xr-done",
+   "type": "flow"
+  }
+ ]
+}

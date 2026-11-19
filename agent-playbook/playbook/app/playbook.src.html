@@ -1,0 +1,1943 @@
+<title>Agent Playbook</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a drafting table. Index rail on the left, a wide pannable board in the middle, a slide-in inspector on the right. */
+:root{
+  --bg:#E8ECF1; --board:#F4F6F9; --dot:#CBD3DD; --panel:#FFFFFF; --panel-2:#F3F5F8;
+  --ink:#16202B; --ink-2:#465364; --muted:#657181; --line:#DCE2E9; --line-2:#C5CED9;
+  --accent:#3B57D9; --accent-ink:#FFFFFF; --accent-soft:#E4E9FF; --wire:#97A3B3; --scrim:rgba(18,24,33,.38);
+  --shadow:0 1px 2px rgba(20,30,45,.06),0 6px 18px rgba(20,30,45,.07);
+  /* light-theme text colours keep 4.5:1 on the panels (small labels use them) */
+  --k-start:#207F53; --k-step:#3864D2; --k-decision:#A0610B; --k-check:#117B8C; --k-rule:#CA3D38;
+  --k-tool:#7E4FCF; --k-gotcha:#8A6C0F; --k-output:#B03F78; --k-goto:#5B6B80; --k-account:#B6511D;
+  --ok:#1E754C; --warn:#8C6109; --bad:#CA3D38;
+  --f-ui:"Schibsted Grotesk",ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1318; --board:#131921; --dot:#263140; --panel:#19202A; --panel-2:#212A36;
+  --ink:#E6EBF1; --ink-2:#B3BECB; --muted:#8592A3; --line:#2A3340; --line-2:#3A4555;
+  --accent:#8297FF; --accent-ink:#0E1318; --accent-soft:#252E50; --wire:#5E6B7D; --scrim:rgba(0,0,0,.55);
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.28);
+  --k-start:#45C189; --k-step:#7298FF; --k-decision:#F0A63E; --k-check:#3BBCCB; --k-rule:#F06C66;
+  --k-tool:#AE88F7; --k-gotcha:#DDB63C; --k-output:#E46CA6; --k-goto:#8E9BAF; --k-account:#FF8C50;
+  --ok:#45C189; --warn:#F0A63E; --bad:#F06C66; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1318; --board:#131921; --dot:#263140; --panel:#19202A; --panel-2:#212A36;
+  --ink:#E6EBF1; --ink-2:#B3BECB; --muted:#8592A3; --line:#2A3340; --line-2:#3A4555;
+  --accent:#8297FF; --accent-ink:#0E1318; --accent-soft:#252E50; --wire:#5E6B7D; --scrim:rgba(0,0,0,.55);
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.28);
+  --k-start:#45C189; --k-step:#7298FF; --k-decision:#F0A63E; --k-check:#3BBCCB; --k-rule:#F06C66;
+  --k-tool:#AE88F7; --k-gotcha:#DDB63C; --k-output:#E46CA6; --k-goto:#8E9BAF; --k-account:#FF8C50;
+  --ok:#45C189; --warn:#F0A63E; --bad:#F06C66; color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+code{font-family:var(--f-mono);font-size:.92em}
+.i{flex:none;display:block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+#app{height:100%;box-sizing:border-box;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px}
+.shell{height:100%;display:grid;grid-template-columns:272px minmax(0,1fr) auto;gap:12px}
+.rail,.stage,.insp{background:var(--panel);border:1px solid var(--line);border-radius:14px;min-height:0;overflow:hidden}
+.rail{display:flex;flex-direction:column}
+.stage{display:flex;flex-direction:column;min-width:0;container:stage/inline-size}
+.insp{width:372px;display:flex;flex-direction:column}
+
+/* tones */
+.k-start{--kc:var(--k-start)}.k-step{--kc:var(--k-step)}.k-decision{--kc:var(--k-decision)}.k-check{--kc:var(--k-check)}.k-rule{--kc:var(--k-rule)}
+.k-tool{--kc:var(--k-tool)}.k-gotcha{--kc:var(--k-gotcha)}.k-output{--kc:var(--k-output)}.k-goto{--kc:var(--k-goto)}.k-account{--kc:var(--k-account)}
+.tone-start{--tc:var(--k-start)}.tone-step{--tc:var(--k-step)}.tone-rule{--tc:var(--k-rule)}.tone-check{--tc:var(--k-check)}.tone-output{--tc:var(--k-output)}
+.tone-tool{--tc:var(--k-tool)}.tone-account{--tc:var(--k-account)}.tone-goto{--tc:var(--k-goto)}.tone-decision{--tc:var(--k-decision)}
+.ftile{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:9px;background:color-mix(in srgb,var(--tc,var(--accent)) 14%,var(--panel));color:var(--tc,var(--accent));flex:none}
+.gdot{width:8px;height:8px;border-radius:2px;background:var(--tc);flex:none}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--panel);color:var(--ink);font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap;text-decoration:none;box-sizing:border-box}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--panel-2)}
+.btn.danger{color:var(--bad)}
+.btn.sm{height:28px;padding:0 9px;font-size:12px}
+.btn.wide{width:100%;justify-content:center}
+.btn:disabled{opacity:.5;cursor:default}
+.ibtn{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--ink-2);cursor:pointer;text-decoration:none;flex:none;box-sizing:border-box}
+.ibtn:hover{background:var(--panel-2);color:var(--ink)}
+.ibtn.sm{width:26px;height:26px;border-radius:6px}
+.only-m{display:none!important}
+
+/* rail */
+.brand{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.brand .ftile{--tc:var(--accent)}
+.bname{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.status{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.status[data-k=saved]::before,.status[data-k=live]::before{background:var(--ok)}
+.status[data-k=saving]::before{background:var(--warn)}
+.status[data-k=error]::before,.status[data-k=offline]::before{background:var(--bad)}
+.tabs{display:flex;gap:2px;margin:0 12px;padding:3px;background:var(--panel-2);border-radius:9px}
+.tabs a{flex:1 1 auto;text-align:center;padding:6px 2px;border-radius:7px;font-size:11.5px;font-weight:500;color:var(--ink-2);text-decoration:none;white-space:nowrap}
+.tabs a:hover{color:var(--ink)}
+.tabs a.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.search{display:flex;align-items:center;gap:8px;margin:10px 12px 6px;padding:0 10px;height:34px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--muted)}
+.search:focus-within{border-color:var(--accent)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;height:100%;color:var(--ink)}
+.search kbd{font:500 11px var(--f-mono);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--muted)}
+.results{margin:0 8px 6px;border:1px solid var(--line);border-radius:10px;max-height:46%;overflow:auto;background:var(--panel-2)}
+.results button{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;border:0;background:transparent;padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--line)}
+.results button:hover{background:var(--panel)}
+.results .rt{font-size:13px;font-weight:500}
+.results .rs{font-size:11.5px;color:var(--muted)}
+.results .ic{color:var(--kc,var(--muted));margin-top:2px}
+.flowlist{flex:1;min-height:0;overflow:auto;padding:4px 8px 8px}
+.fgroup{margin-top:10px}
+.gh{display:flex;align-items:center;gap:8px;font:600 10.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:6px 8px}
+.gc{margin-left:auto;font-weight:500}
+.fitem{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;color:var(--ink-2);text-decoration:none;font-size:13.5px}
+.fitem:hover{background:var(--panel-2);color:var(--ink)}
+.fitem.on{background:var(--accent-soft);color:var(--ink);font-weight:600}
+.fitem .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fitem .fc{font:500 11px var(--f-mono);color:var(--muted)}
+.edot{width:7px;height:7px;border-radius:50%;background:var(--k-account);flex:none}
+.railfoot{padding:10px 12px;border-top:1px solid var(--line);display:flex;gap:6px}
+.empty{color:var(--muted);font-size:13px;padding:10px}
+
+/* bar */
+.bar{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-bottom:1px solid var(--line);min-height:58px;box-sizing:border-box}
+.crumb{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.crumb .grp{font:600 10.5px/1.2 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fname{align-self:flex-start;border:0;background:transparent;padding:0;font-size:17px;font-weight:700;letter-spacing:-.01em;text-align:left;cursor:pointer;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.fname:hover:not(:disabled){color:var(--accent)}
+.fname:disabled{cursor:default}
+.vt{font-size:17px}
+.fsum{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
+.tools .sepv{width:1px;height:22px;background:var(--line);margin:0 4px}
+.banner{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 14px;font-size:13px;line-height:1.4;color:var(--ink);background:color-mix(in srgb,var(--warn) 13%,var(--panel));border-bottom:1px solid color-mix(in srgb,var(--warn) 35%,var(--line))}
+.banner>.i{color:var(--warn)}
+.banner>span{flex:1;min-width:0}
+
+/* board */
+.board{position:relative;flex:1;min-height:0;overflow:hidden;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.15px,transparent 1.3px);touch-action:none;outline:0;user-select:none;-webkit-user-select:none}
+.board.panning{cursor:grabbing}
+.world{position:absolute;left:0;top:0;transform-origin:0 0}
+.wires{position:absolute;left:-20000px;top:-20000px;width:40000px;height:40000px;overflow:visible;pointer-events:none}
+.wire{fill:none;stroke:var(--wire);stroke-width:1.6}
+.wire.att{stroke-dasharray:5 5;opacity:.8}
+.wire.hot{stroke:var(--accent);stroke-width:2.1;opacity:1}
+.wire.sel{stroke:var(--accent);stroke-width:2.8}
+.wire.dim{opacity:.13}
+.hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer}
+.mk{fill:var(--wire)}.mkh{fill:var(--accent)}
+#ghost{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4}
+#nodes,#labels{position:absolute;left:0;top:0}
+.elabel{position:absolute;transform:translate(-50%,-50%);font:500 11px/1.5 var(--f-mono);background:var(--board);color:var(--ink-2);padding:0 6px;border-radius:5px;border:1px solid var(--line);white-space:nowrap;cursor:pointer}
+.elabel.sel{border-color:var(--accent);color:var(--accent)}
+.node{position:absolute;width:252px;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);cursor:grab;user-select:none;-webkit-user-select:none;transition:opacity .15s}
+.node:hover{border-color:var(--line-2)}
+.node.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent),var(--shadow)}
+.node.dim{opacity:.25}
+.node.k-start{border-radius:22px}
+.node.k-rule,.node.k-gotcha{background:color-mix(in srgb,var(--kc) 6%,var(--panel))}
+.node.k-goto{border-style:dashed;border-color:var(--line-2);box-shadow:none}
+.node .hd{display:flex;gap:10px;align-items:flex-start;padding:11px 12px 11px 11px}
+.node .ic,.ihd .ic{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--kc) 14%,transparent);color:var(--kc)}
+.node .tx{min-width:0;flex:1}
+.node .kl{font:600 9.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--kc);margin:2px 0 5px}
+.node .t{font-weight:600;font-size:14px;line-height:1.25;letter-spacing:-.005em;overflow-wrap:anywhere}
+.node .s{font-size:12px;line-height:1.35;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+.node .ft{display:flex;gap:5px;flex-wrap:wrap;padding:0 12px 10px 51px;margin-top:-3px}
+.node .edot{position:absolute;top:9px;right:9px}
+.badge{display:inline-flex;align-items:center;gap:4px;font:500 10.5px/1 var(--f-mono);color:var(--ink-2);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+.badge.go{color:var(--k-goto)}
+.port{position:absolute;top:50%;width:11px;height:11px;margin-top:-6.5px;border-radius:50%;background:var(--panel);border:2px solid var(--line-2);box-sizing:content-box}
+.port.in{left:-7.5px;pointer-events:none}
+.port.out{right:-7.5px;cursor:crosshair}
+.node:hover .port.out,.port.out:hover{border-color:var(--accent);background:var(--accent-soft)}
+#marquee{position:absolute;border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);pointer-events:none;border-radius:3px}
+.boardui{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:flex-end;gap:10px;pointer-events:none}
+.boardui>*{pointer-events:auto}
+.legend{display:flex;flex-wrap:wrap;gap:2px;background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:10px;padding:4px;max-width:min(560px,60%)}
+.lk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:4px 8px;border-radius:6px;border:0;background:transparent;cursor:pointer;color:var(--ink-2)}
+.lk i{width:9px;height:9px;border-radius:3px;background:var(--kc)}
+.lk:hover{background:var(--panel-2)}
+.lk.on{background:var(--panel-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.lk b{font:500 10.5px var(--f-mono);color:var(--muted)}
+.sp{flex:1}
+.navbox{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.zoom{display:flex;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2px}
+.zoom span{font:500 11.5px var(--f-mono);min-width:44px;text-align:center;color:var(--ink-2)}
+.mini{display:block;width:176px;height:116px;background:var(--panel);border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.boardmsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px}
+.boardmsg h3{color:var(--ink);font-size:16px;margin:0 0 6px}
+.boardmsg p{margin:0 auto;max-width:420px}
+
+/* inspector */
+.ihd{display:flex;align-items:center;gap:10px;padding:12px 10px 12px 14px;border-bottom:1px solid var(--line)}
+.ihd .kl{font:600 11px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--kc)}
+.ibody{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px 18px 20px}
+.ibody>*{min-width:0;max-width:100%}
+.frow,.fpath,.fmeta{min-width:0}
+.ibody h2{font-size:19px;line-height:1.25;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.isub{color:var(--muted);margin:6px 0 0}
+.ibody h3{font:600 10.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:22px 0 9px}
+.prose{margin-top:14px;color:var(--ink);font-size:13.5px;line-height:1.55}
+.prose p{margin:0 0 8px}
+.prose ul{margin:0 0 8px;padding-left:18px}
+.prose li{margin:3px 0}
+.prose li::marker{color:var(--kc,var(--muted))}
+.prose code,.checks code,.anotes code{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:flex;gap:8px;font-size:13px;line-height:1.45}
+.checks .i{color:var(--ok);margin-top:2px}
+.frow{border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 10px;margin-bottom:6px;background:var(--panel-2)}
+.fmeta{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink)}
+.fmeta .i{color:var(--k-tool)}
+.fpath{display:flex;align-items:center;gap:2px;margin-top:5px}
+.fpath code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;color:var(--ink-2)}
+.links{display:grid;gap:4px}
+.links a{display:flex;align-items:center;gap:7px;color:var(--accent);text-decoration:none;font-size:13px;overflow-wrap:anywhere}
+.links a:hover{text-decoration:underline}
+.conn{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:8px}
+.conn>span{font-size:12px;color:var(--muted);width:100%}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:3px 8px;cursor:pointer;color:var(--ink-2);text-decoration:none;max-width:100%}
+.chip:hover{border-color:var(--line-2);color:var(--ink)}
+.chip em{font-style:normal;font:500 10.5px var(--f-mono);color:var(--muted)}
+.chip .x{margin-left:2px;cursor:pointer;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.srcs{display:flex;flex-wrap:wrap;gap:4px}
+.srcs code{font-size:10.5px;color:var(--muted);background:var(--panel-2);border-radius:5px;padding:2px 6px}
+.edited{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--k-account);margin-top:18px}
+.ifoot{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
+.ifoot .danger{margin-left:auto}
+.acct-inline{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel-2);font-size:13px}
+
+/* forms */
+.fx{display:grid;gap:4px;margin-bottom:12px}
+.fx>label,.fx>.lbl{font-size:12px;font-weight:600;color:var(--ink-2)}
+.fx .help{font-size:11.5px;color:var(--muted)}
+.fx input[type=text],.fx input[type=url],.fx select,.fx textarea{width:100%;box-sizing:border-box;border:1px solid var(--line-2);border-radius:8px;background:var(--panel);padding:7px 9px;outline:0}
+.fx textarea{resize:vertical;min-height:70px;line-height:1.45}
+.fx textarea.mono{font:12.5px/1.5 var(--f-mono)}
+.fx input:focus,.fx select:focus,.fx textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.icongrid{display:flex;flex-wrap:wrap;gap:4px}
+.icongrid label{cursor:pointer}
+.icongrid input{position:absolute;opacity:0;pointer-events:none}
+.icongrid span{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--line);color:var(--ink-2)}
+.icongrid input:checked+span{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.icongrid input:focus-visible+span{outline:2px solid var(--accent)}
+.fadd{display:flex;gap:6px;margin-top:6px}
+.fadd>*{flex:1;min-width:0}
+/* the long step form keeps Save and Cancel in view */
+#nodeForm .mact{position:sticky;bottom:-20px;z-index:1;margin:16px -18px -20px;padding:10px 18px;background:var(--panel);border-top:1px solid var(--line)}
+
+/* pages */
+.page{flex:1;min-height:0;overflow:auto;padding:26px clamp(16px,3vw,40px) 56px}
+.hero h1{font-size:clamp(24px,3vw,32px);line-height:1.1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.hero p{color:var(--ink-2);max-width:66ch;margin:10px 0 0;font-size:14.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:22px 0 8px}
+.stat{background:var(--panel);padding:12px 14px}
+.stat b{display:block;font:600 22px/1.1 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat span{font-size:12px;color:var(--muted)}
+.gsec{margin-top:30px}
+.gsec h2{display:flex;align-items:center;gap:9px;font-size:15px;margin:0 0 12px;letter-spacing:-.005em}
+.gsec h2 .gc{font:500 12px var(--f-mono);color:var(--muted);margin-left:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:12px;padding:13px 14px 12px;text-decoration:none;color:inherit;background:var(--panel);min-width:0}
+.tile:hover{border-color:var(--line-2);box-shadow:var(--shadow)}
+.tile .th{display:flex;align-items:center;gap:10px}
+.tile .th b{font-size:14.5px}
+.tile p{margin:0;color:var(--ink-2);font-size:12.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em}
+.kbar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px;background:var(--panel-2)}
+.kbar i{background:var(--kc)}
+.tm{font:500 11px var(--f-mono);color:var(--muted)}
+.tm .you{color:var(--k-account)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 18px}
+.toolbar select,.toolbar input{height:32px;border:1px solid var(--line-2);border-radius:8px;background:var(--panel);padding:0 9px;min-width:0}
+.toolbar input{flex:1;max-width:280px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.acard{border:1px solid var(--line);border-radius:12px;padding:13px 14px;background:var(--panel);display:flex;flex-direction:column;gap:8px;min-width:0}
+.acard header{display:flex;align-items:center;gap:10px}
+.acard header>div{flex:1;min-width:0}
+.ap{font:600 10px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ah{font:600 15px/1.3 var(--f-mono);overflow-wrap:anywhere}
+.al{font-size:12.5px;color:var(--ink-2)}
+.acard p{margin:0;font-size:13px;color:var(--ink)}
+.arow{display:flex;gap:7px;font-size:12.5px;color:var(--ink-2)}
+.arow .i{margin-top:2px;color:var(--muted)}
+.anotes{margin:0;padding-left:16px;font-size:12.5px;color:var(--ink-2)}
+.acard footer{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto;padding-top:4px;border-top:1px solid var(--line)}
+.acard.retired,.acard.skip{opacity:.7}
+.pill{font:600 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border-radius:999px;background:var(--panel-2);color:var(--ink-2);flex:none}
+.pill.s-active{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.s-replies-only{background:color-mix(in srgb,var(--k-step) 16%,transparent);color:var(--k-step)}
+.pill.s-paused{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.s-skip,.pill.s-retired{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.ph{display:flex;align-items:center;gap:9px;margin:26px 0 10px;font-size:14px}
+.ph:first-of-type{margin-top:6px}
+.stats+.ph{margin-top:24px}
+.ph .gc{font:500 12px var(--f-mono);color:var(--muted);margin-left:0}
+.ph .btn{margin-left:auto}
+.flist{display:grid;gap:8px}
+.folder{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--panel)}
+.folder .fl b{display:flex;align-items:center;gap:7px;font-size:13.5px}
+.folder .fl b .i{color:var(--k-tool)}
+.folder .fl small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.folder .used{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.kindtag{font:600 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:3px 5px;margin-left:4px}
+.pcard{border:1px solid var(--line);border-radius:12px;background:var(--panel);display:flex;flex-direction:column;min-width:0}
+.pcard .hd{display:flex;gap:10px;padding:12px 12px 6px}
+.pcard .hd .ic{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--kc) 14%,transparent);color:var(--kc)}
+.pcard .kl{font:600 9.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--kc);margin:2px 0 5px}
+.pcard .hd>div{min-width:0}
+.pcard .t{font-weight:600;overflow-wrap:anywhere}
+.pcard .s{font-size:12px;color:var(--muted)}
+/* margins, not padding: a clamped box shows the next line through its padding */
+.pcard .bx{font-size:12.5px;line-height:1.45;color:var(--ink-2);margin:0 12px 10px 52px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.pcard .bx code{font-size:.92em;color:var(--ink)}
+.pcard .used{font-size:12px;color:var(--muted);padding:0 12px 10px 52px}
+.pcard footer{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;border-top:1px solid var(--line);margin-top:auto}
+.hrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel);font-size:13px;flex-wrap:wrap}
+.hrow .hat{font:500 11.5px var(--f-mono);color:var(--muted);min-width:118px}
+.hrow .hwho{font-size:12px;color:var(--ink-2);min-width:70px}
+.hrow .htitle{flex:1;min-width:0}
+.hrow a{color:var(--accent);text-decoration:none}
+.hrow .hwhy{flex-basis:100%;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.hrow .hwhy b{font-weight:600;color:var(--ink)}
+.rchips{margin:-4px 0 4px}
+.post{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.post.open{border-color:var(--line-2);box-shadow:var(--shadow)}
+.phead{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;text-align:left;padding:9px 12px;cursor:pointer}
+.phead:hover{background:var(--panel-2)}
+.pmeta{flex:1;min-width:0;font-size:13px}
+.pmeta small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbody{padding:4px 14px 14px 50px}
+.ptext{white-space:pre-wrap;font:13.5px/1.55 var(--f-ui);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 10px;overflow-wrap:anywhere}
+.pdl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12.5px;margin:0}
+.pdl dt{color:var(--muted)}
+.pdl dd{margin:0;overflow-wrap:anywhere;min-width:0}
+.pdl a{color:var(--accent)}
+.notice{border:1px solid var(--line);background:var(--panel-2);border-radius:12px;padding:14px 16px;color:var(--ink-2);max-width:70ch}
+
+/* modal, menus, toast */
+.modal{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:60;padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:min(580px,100%);max-height:86vh;overflow:auto;box-sizing:border-box;padding:20px}
+.sheet h2{margin:0 0 14px;font-size:18px;letter-spacing:-.01em}
+.sheet p{color:var(--ink-2);margin:0 0 14px}
+.mact{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.plist{display:grid;gap:6px;max-height:52vh;overflow:auto;margin-top:8px}
+.plist button{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:9px 10px;cursor:pointer}
+.plist button:hover{border-color:var(--accent)}
+.plist .ic{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:color-mix(in srgb,var(--kc) 14%,transparent);color:var(--kc)}
+.plist b{display:block;font-size:13.5px}
+.plist small{color:var(--muted);font-size:12px}
+.menu{position:fixed;z-index:55;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.18);padding:6px;width:260px;max-height:70vh;overflow:auto}
+.menu button{display:flex;gap:10px;align-items:center;width:100%;border:0;background:transparent;text-align:left;padding:7px 8px;border-radius:8px;cursor:pointer}
+.menu button:hover,.menu button:focus-visible{background:var(--panel-2)}
+.menu .ic{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:color-mix(in srgb,var(--kc,var(--accent)) 14%,transparent);color:var(--kc,var(--accent))}
+.menu b{display:block;font-size:13px;font-weight:600}
+.menu small{display:block;font-size:11.5px;color:var(--muted)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--panel);border-radius:10px;padding:9px 14px;font-size:13px;display:flex;gap:12px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
+.toast button{border:0;background:transparent;color:var(--accent-soft);font-weight:600;cursor:pointer;padding:0}
+.kbd-list{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.kbd-list kbd{font:500 11.5px var(--f-mono);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;white-space:nowrap;justify-self:start}
+.scrim{display:none}
+
+@media (max-width:1180px){.insp{width:330px}.shell{grid-template-columns:240px minmax(0,1fr) auto}.tabs{margin:0 8px}.tabs a{font-size:11px}}
+/* the middle column narrows when the details panel opens (about 400px at 1024 wide): the top bar and the board
+   controls give up their least needed parts first, so the flow's name stays readable and nothing is cut off */
+@container stage (max-width:720px){.tools .lbl,.tools .sepv,.tools [data-act=shortcuts]{display:none}}
+@container stage (max-width:480px){
+  .hide-n,.mini{display:none!important}
+  .legend{flex-wrap:nowrap;overflow-x:auto;max-width:calc(100% - 130px);scrollbar-width:none}
+  .lk{white-space:nowrap}
+}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{position:fixed;left:0;top:0;bottom:0;width:min(300px,86vw);z-index:45;border-radius:0 14px 14px 0;transform:translateX(-104%);transition:transform .2s ease;padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset-left,0px)}
+  .shell.rail-open .rail{transform:none}
+  .shell.rail-open .scrim{display:block;position:fixed;inset:0;background:var(--scrim);z-index:44}
+  .insp{position:fixed;left:0;right:0;bottom:0;width:auto;max-height:74vh;z-index:40;border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+  .only-m{display:inline-grid!important}
+  .mini,.hide-m{display:none!important}
+  .legend{flex-wrap:nowrap;overflow-x:auto;max-width:calc(100% - 150px);scrollbar-width:none}
+  .lk{white-space:nowrap}
+  .fsum{display:none}
+  .folder{grid-template-columns:minmax(0,1fr)}
+  .row2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.partnote{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0;padding:8px 10px;border:1px dashed rgba(128,128,128,.4);border-radius:8px;font-size:12.5px;color:var(--muted)}
+.partnote .pacts{display:flex;gap:6px;margin-left:auto}
+.prov{margin-top:14px;font-size:12.5px;color:var(--muted)}
+.prov summary{cursor:pointer;font:600 10.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase}
+.prov .porigin{white-space:pre-wrap;margin:8px 0;line-height:1.45}
+</style>
+
+<div id="app">
+ <div class="shell" id="shell">
+  <div class="scrim" data-act="rail-close"></div>
+  <aside class="rail" id="rail" aria-label="Flows">
+   <div class="brand">
+    <span class="ftile" id="brandIcon"></span>
+    <div style="flex:1;min-width:0"><div class="bname">Agent Playbook</div><div class="status" id="status" data-k="loading">Loading…</div></div>
+    <button class="ibtn only-m" data-act="rail-close" aria-label="Close menu" id="railClose"></button>
+   </div>
+   <nav class="tabs" id="tabs" aria-label="Views">
+    <a href="#home" data-v="home">Home</a><a href="#accounts" data-v="accounts">Accounts</a><a href="#folders" data-v="folders">Folders</a><a href="#parts" data-v="parts">Parts</a><a href="#history" data-v="history">History</a>
+   </nav>
+   <label class="search" id="searchBox"><span id="searchIcon"></span><input id="q" type="text" autocomplete="off" placeholder="Search everything" aria-label="Search flows, steps, accounts and folders"><kbd>/</kbd></label>
+   <div class="results" id="results" hidden></div>
+   <div class="flowlist" id="flowList"><p class="empty">Loading flows…</p></div>
+   <div class="railfoot" id="railFoot"></div>
+  </aside>
+  <main class="stage">
+   <header class="bar" id="bar"></header>
+   <div class="banner" id="banner" role="status" hidden></div>
+   <div class="board" id="board" tabindex="-1" hidden>
+    <div class="world" id="world">
+     <svg class="wires" id="wires" aria-hidden="true"><defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" class="mk"/></marker>
+      <marker id="arrH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" class="mkh"/></marker>
+     </defs><g transform="translate(20000 20000)"><g id="wireG"></g><path id="ghost" d=""/></g></svg>
+     <div id="labels"></div>
+     <div id="nodes"></div>
+    </div>
+    <div id="marquee" hidden></div>
+    <div class="boardmsg" id="boardMsg" hidden></div>
+    <div class="boardui">
+     <div class="legend" id="legend"></div>
+     <div class="sp"></div>
+     <div class="navbox">
+      <div class="zoom" id="zoomBox"></div>
+      <canvas class="mini" id="mini" width="352" height="232" aria-label="Minimap: click to move the view"></canvas>
+     </div>
+    </div>
+   </div>
+   <div class="page" id="page"></div>
+  </main>
+  <aside class="insp" id="insp" hidden aria-label="Details"></aside>
+ </div>
+</div>
+<div class="modal" id="modal" hidden><div class="sheet" id="modalBody" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div></div>
+<div class="menu" id="menu" hidden role="menu"></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+'use strict';
+/* Icons: a subset of Lucide (ISC license, lucide.dev) */
+const ICONS = __ICONS__;
+
+const KIND_ORDER = ['start','step','decision','check','rule','tool','gotcha','output','goto','account'];
+const KINDS = {
+  start:{label:'Start',icon:'k_start',d:'Where the flow begins'},
+  step:{label:'Step',icon:'k_step',d:'Something to do'},
+  decision:{label:'Decision',icon:'k_decision',d:'A question with branches'},
+  check:{label:'QC check',icon:'k_check',d:'A gate before moving on'},
+  rule:{label:'Rule',icon:'k_rule',d:'A standing never or always'},
+  tool:{label:'Tool',icon:'k_tool',d:'A script, app or site'},
+  gotcha:{label:'Gotcha',icon:'k_gotcha',d:'A known failure and its fix'},
+  output:{label:'Result',icon:'k_output',d:'The end result'},
+  goto:{label:'Go to flow',icon:'k_goto',d:'Opens another flow'},
+  account:{label:'Account',icon:'k_account',d:'One of the accounts'}
+};
+const GROUPS = ['Start here','Rules & QC','Platforms','Video','Art & thumbnails','Projects & promo','Jobs & inbox'];
+const GROUP_TONE = {'Start here':'step','Rules & QC':'rule','Platforms':'check','Video':'output','Art & thumbnails':'tool','Projects & promo':'account','Jobs & inbox':'decision'};
+const FLOW_ICONS = ['map','loop','shield','check','browser','spam','x','bluesky','threads','linkedin','facebook','instagram','reddit','article','rocket','reply','video','youtube','tiktok','music','camera','mic','palette','image','thumb','layers','banner','megaphone','box','briefcase','mask','puzzle','chat','glasses','window','gamepad','shirt','list','clock','folder','library','sparkle'];
+const PLATFORMS = ['X','Bluesky','Threads','LinkedIn','Facebook','Facebook group','Instagram','TikTok','YouTube','Reddit','DEV','Medium','Hashnode','GitHub','Hacker News','Product Hunt','Contra','Upwork','Gmail','other'];
+const PLATFORM_ICON = {X:'x',Bluesky:'bluesky',Threads:'threads',LinkedIn:'linkedin',Facebook:'facebook','Facebook group':'facebook',Instagram:'instagram',TikTok:'tiktok',YouTube:'youtube',Reddit:'reddit',DEV:'article',Medium:'article',Hashnode:'article',GitHub:'puzzle','Hacker News':'rocket','Product Hunt':'rocket',Contra:'briefcase',Upwork:'briefcase',Gmail:'chat',other:'users'};
+const STATUSES = ['active','replies-only','paused','retired','skip'];
+const FOLDER_KINDS = ['music','images','video','scripts','docs','playbook','other'];
+const RESERVED = new Set(['home','accounts','folders','parts','history','settings','sidebar','customize','upgrade','downloads','map']);
+const COLS = ['flows','accounts','folders','parts'];
+const SIDE_KINDS = ['rule','tool','gotcha'];
+const PART_FIELDS = ['kind','title','sub','body','checks','goto','account'];   // what a node takes from the part it references
+const NODE_W = 252, COLW = 320, GRID = 10;
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic = (name, size = 16) => `<svg class="i" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.k_step}</svg>`;
+const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+function md(t) {
+  const out = []; let list = null;
+  for (const raw of String(t || '').split('\n')) {
+    const l = raw.replace(/\s+$/, '');
+    if (/^\s*[-*•] /.test(l)) { (list ??= []).push('<li>' + inline(l.replace(/^\s*[-*•] /, '')) + '</li>'); continue; }
+    if (list) { out.push('<ul>' + list.join('') + '</ul>'); list = null; }
+    if (l.trim()) out.push('<p>' + inline(l) + '</p>');
+  }
+  if (list) out.push('<ul>' + list.join('') + '</ul>');
+  return out.join('');
+}
+const uid = p => `${String(p).replace(/-+$/, '') || 'n'}-${Math.random().toString(36).slice(2, 7)}${Date.now().toString(36).slice(-3)}`;
+const slug = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'item';
+const uniqueId = (base, taken) => { let id = base, i = 2; while (taken[id] || RESERVED.has(id)) id = `${base}-${i++}`; return id; };
+const clone = o => JSON.parse(JSON.stringify(o));
+const nowISO = () => new Date().toISOString();
+const lines = s => String(s || '').split('\n').map(x => x.trim()).filter(Boolean);
+const safeUrl = u => /^https?:\/\//i.test(String(u || '')) ? u : '#';
+const vsc = p => 'vscode://file/' + encodeURI(String(p || '').replace(/\\/g, '/'));
+const isFile = p => /\.[a-z0-9]{1,5}$/i.test(String(p || ''));
+function fmtDate(iso) { try { return new Date(iso).toLocaleString(undefined, {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}); } catch { return ''; } }
+function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+
+const S = { flows:{}, accounts:{}, folders:{}, parts:{}, view:'home', flowId:null, sel:new Set(), selEdge:null, cams:{},
+  mode:'loading', ready:false, canWrite:false, revs:emptyRevs(), problems:0, editing:null, editFolders:[], hiKind:null, pending:null, q:'',
+  af:{platform:'', status:'', q:''}, lastFlow:lsGet('pb-last') || null };
+const sizes = new Map();
+const shell = $('#shell'), board = $('#board'), world = $('#world'), nodesEl = $('#nodes'), wireG = $('#wireG'), labelsEl = $('#labels'), ghost = $('#ghost'), insp = $('#insp'), page = $('#page');
+
+/* ---------- data ---------- */
+function emptyRevs() { const o = {}; for (const c of COLS) o[c] = {}; return o; }
+function normFlow(id, d) {
+  const f = Object.assign({name:id, group:'Start here', icon:'map', summary:'', order:999, nodes:[], edges:[]}, d, {id});
+  f.nodes = (Array.isArray(f.nodes) ? f.nodes : []).filter(n => n && typeof n.id === 'string').map(n => {
+    // a node that references a part keeps only its own fields; the rest is read from the part (see view)
+    const m = n.part ? Object.assign({}, n) : Object.assign({kind:'step', title:'Untitled', sub:'', body:''}, n);
+    if (typeof m.x !== 'number') m.x = 0;
+    if (typeof m.y !== 'number') m.y = 0;
+    return m;
+  });
+  const ids = new Set(f.nodes.map(n => n.id)); const seen = new Set();
+  f.edges = (Array.isArray(f.edges) ? f.edges : []).filter(e => e && ids.has(e.from) && ids.has(e.to)).map(e => {
+    let id = `${e.from}>${e.to}`; while (seen.has(id)) id += '+'; seen.add(id);
+    return Object.assign({type:'flow', label:''}, e, {id});
+  });
+  return f;
+}
+function norm(col, id, d) {
+  if (col === 'flows') return normFlow(id, d);
+  return Object.assign({}, d, {id});
+}
+/* a node as it reads: one that references a part shows the part's kind, title, summary, details and checklist */
+function view(n) {
+  if (!n) return n;
+  if (!n.part) return KINDS[n.kind] ? n : Object.assign({}, n, {kind:'step'});
+  const p = S.parts[n.part];
+  if (!p) return Object.assign({}, n, {kind:'step', title:`Missing part: ${n.part}`, sub:'', body:'', partMissing:true});
+  const o = Object.assign({}, n);
+  for (const k of PART_FIELDS) if (p[k] != null) o[k] = p[k];
+  for (const k of ['folders','links']) {
+    const m = []; for (const x of [...(p[k] || []), ...(n[k] || [])]) if (!m.some(y => JSON.stringify(y) === JSON.stringify(x))) m.push(x);
+    if (m.length) o[k] = m;
+  }
+  if (!KINDS[o.kind]) o.kind = 'step';
+  if (!o.title) o.title = 'Untitled';
+  return o;
+}
+/* view(n).kind without building the whole view (the minimap and the wires ask for it on every frame) */
+function kindOf(n) {
+  let k = n.kind;
+  if (n.part) { const p = S.parts[n.part]; if (!p) return 'step'; if (p.kind != null) k = p.kind; }
+  return KINDS[k] ? k : 'step';
+}
+/* the account nodes that show an account (not counting steps that follow a part) */
+function accountUse(aid) { const u = []; for (const f of Object.values(S.flows)) for (const n of f.nodes) if (!n.part && n.kind === 'account' && n.account === aid) u.push({flow:f.id, node:n.id}); return u; }
+function partUse(pid) { const u = []; for (const f of Object.values(S.flows)) for (const n of f.nodes) if (n.part === pid) u.push({flow:f.id, node:n.id}); return u; }
+function detachNode(n) {
+  const p = S.parts[n.part]; const v = view(n);
+  if (p) { for (const k of PART_FIELDS) if (p[k] != null) n[k] = clone(p[k]); for (const k of ['folders','links']) if (v[k]) n[k] = clone(v[k]); }
+  else Object.assign(n, {kind:'step', title:'Untitled', sub:'', body:''});
+  delete n.part; n.editedAt = nowISO();
+}
+const curFlow = () => S.flows[S.flowId];
+const nodeById = (f, id) => f && f.nodes.find(n => n.id === id);
+function flowsSorted() {
+  const gi = g => { const i = GROUPS.indexOf(g); return i < 0 ? 99 : i; };
+  return Object.values(S.flows).sort((a, b) => gi(a.group) - gi(b.group) || (a.order ?? 999) - (b.order ?? 999) || a.name.localeCompare(b.name));
+}
+function folderOf(ref) {
+  if (!ref || typeof ref !== 'string') return null;
+  return S.folders[ref] ? Object.assign({}, S.folders[ref], {id:ref}) : {id:ref, label:ref, path:'', missing:true};
+}
+function folderUse() {
+  const m = {};
+  for (const f of Object.values(S.flows)) for (const n of f.nodes) for (const r of (n.folders || [])) {
+    if (typeof r !== 'string') continue;
+    (m[r] ??= []).push({flow:f.id, node:n.id});
+  }
+  return m;
+}
+
+/* ---------- saving: the local skill server keeps one JSON file per flow, account, folder and part ---------- */
+let TOKEN = '__PB_TOKEN__';
+async function refreshToken() {
+  // the server makes a new token each time it starts; only this origin can read it
+  try { const r = await fetch('/api/session', {cache:'no-store'}); if (!r.ok) return false; const j = await r.json(); if (!j.token) return false; TOKEN = j.token; return true; }
+  catch { return false; }
+}
+/* opt.rev is the revision the change started from (null: the document should not exist yet). The server refuses a stale save. */
+async function api(method, path, body, opt = {}) {
+  const send = () => {
+    const headers = {'X-Playbook-Token':TOKEN};
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    if (opt.reason) headers['X-Change-Reason'] = encodeURIComponent(opt.reason);
+    if (typeof opt.rev === 'string') headers['If-Match'] = `"${opt.rev}"`; else if (opt.rev === null) headers['If-None-Match'] = '*';
+    return fetch(path, {method, headers, cache:'no-store', body:body === undefined ? undefined : JSON.stringify(body)});
+  };
+  let r;
+  try {
+    r = await send();
+    if (r.status === 403 && method !== 'GET' && await refreshToken()) r = await send();
+  } catch { setOnline(false); const e = new Error("the skill server isn't answering"); e.code = 'network'; throw e; }
+  setOnline(true);
+  if (!r.ok) {
+    let info = {}; try { info = await r.json(); } catch {}
+    const e = new Error(info.message || info.error || ('HTTP ' + r.status)); e.status = r.status; e.info = info; e.removed = info.removed || [];
+    e.code = r.status === 409 ? 'reason' : r.status === 412 ? 'stale' : r.status === 403 ? 'forbidden' : r.status === 404 ? 'missing' : r.status >= 500 || r.status === 408 || r.status === 429 ? 'server' : 'refused';   // 408/429/5xx: worth trying again
+    throw e;
+  }
+  return r.json();
+}
+const dirty = new Set(); const saving = {}; let saveTimer = null;
+const fails = {}, retryAt = {}; const unsaved = new Set();   // failed saves: how often, when to try again, and the ones the server refused
+/* every deletion carries a reason; the server refuses to drop steps or documents without one */
+const reasons = {}; const blocked = new Set();
+function addReason(id, why) { if (why) (reasons[id] ??= []).push(why); }
+function takeReasons(id) { const r = [...new Set(reasons[id] || [])]; delete reasons[id]; return r.join('; '); }
+function setStatus(k, msg) {
+  const el = $('#status');
+  const t = {loading:'Loading…', saving:'Saving…', saved:'Saved to the skill', offline:'Skill server is not running', static:'View only · install the skill to edit', error:msg || 'Not saved'};
+  el.textContent = t[k] || k; el.dataset.k = k;
+}
+function saveSoon(ms) { clearTimeout(saveTimer); saveTimer = setTimeout(flush, ms); }
+/* the server stopped answering (or came back) after the page loaded: say so above the board, and when it is back
+   send what is waiting at once instead of at the end of the current back-off */
+let online = true;
+function setOnline(on) {
+  if (on === online || S.mode !== 'live') return;
+  online = on; renderBanner();
+  if (on && dirty.size) { for (const id of dirty) retryAt[id] = 0; saveSoon(50); }
+}
+function renderBanner() {
+  const b = $('#banner'); const show = S.mode === 'live' && !online;
+  b.hidden = !show; if (!show) { b.innerHTML = ''; return; }
+  b.innerHTML = `${ic('k_gotcha',16)}<span><b>The skill server isn't answering.</b> ${pendingWork() ? 'Your changes are kept in this window and saved when it is back, so keep this tab open.' : 'Start it with the Agent Playbook shortcut. Changes to flows made meanwhile are kept here and saved when it is back.'}</span><button class="btn sm" data-act="retry-now">Try again</button>`;
+}
+function touchFlow(id) {
+  dirty.add(id); unsaved.delete(id); fails[id] = 0; retryAt[id] = 0;
+  if (S.mode === 'live') setStatus('saving');
+  if (!online) renderBanner();
+  saveSoon(500);
+}
+/* what is sent to the server: no page-only fields, nothing empty, positions on the grid */
+function cleanFlow(f) {
+  const o = clone(f); delete o.id;
+  for (const n of o.nodes) {
+    n.x = snapG(n.x); n.y = snapG(n.y);
+    for (const k of ['checks','links','folders','src']) if (Array.isArray(n[k]) && !n[k].length) delete n[k];
+    for (const k of ['sub','body']) if (n[k] === '') delete n[k];
+    if (n.part) for (const k of PART_FIELDS) delete n[k];
+  }
+  for (const e of o.edges) { delete e.id; if (!e.label) delete e.label; }
+  return o;
+}
+async function flush() {
+  if (S.mode !== 'live') { dirty.clear(); return; }
+  let next = Infinity; const now = Date.now();
+  for (const id of [...dirty]) {
+    if (saving[id] || blocked.has(id)) continue;
+    if ((retryAt[id] || 0) > now) { next = Math.min(next, retryAt[id] - now); continue; }
+    dirty.delete(id); saving[id] = true;
+    const why = takeReasons(id);
+    const keepReason = () => { if (why) reasons[id] = [why, ...(reasons[id] || [])]; };
+    const wasOnline = online;
+    try {
+      const f = S.flows[id]; const path = '/api/flows/' + encodeURIComponent(id); const rev = S.revs.flows[id] ?? null;
+      if (f) { const r = await api('PUT', path, cleanFlow(f), {reason:why, rev}); S.revs.flows[id] = r.rev; }
+      else if (rev !== null) {
+        try { await api('DELETE', path, undefined, {reason:why, rev}); } catch (e) { if (e.code !== 'missing') throw e; }
+        delete S.revs.flows[id];
+      }
+      fails[id] = 0; unsaved.delete(id);
+    } catch (e) {
+      if (e.code === 'reason') askReason(id, e.removed || []);
+      else if (e.code === 'stale') takeCurrent('flows', id, e.info);
+      else if (e.code === 'network' || e.code === 'server') {
+        // the server is down or failing: keep the change and try again, less and less often (1 s, 2 s, 4 s … 30 s)
+        keepReason(); dirty.add(id); fails[id] = (fails[id] || 0) + 1;
+        const ms = Math.min(30000, 1000 * 2 ** (fails[id] - 1)); retryAt[id] = Date.now() + ms; next = Math.min(next, ms);
+        writeFailed(e, fails[id] === 1 && wasOnline);   // once the banner says the server is gone, one toast is enough
+      } else { keepReason(); unsaved.add(id); writeFailed(e); }   // refused: sending the same thing again would be refused again
+    }
+    finally { saving[id] = false; }
+    if (dirty.has(id) && !(retryAt[id] > Date.now())) next = Math.min(next, 250);   // edited again while it was saving
+  }
+  if (dirty.size && next < Infinity) saveSoon(next);
+  if (!dirty.size && !blocked.size && !unsaved.size && !Object.values(saving).some(Boolean) && S.canWrite) setStatus('saved');
+}
+async function askReason(id, removed) {
+  blocked.add(id);
+  const f = S.flows[id];
+  const what = !f ? `the flow “${id}”` : removed.length === 1 ? `“${removed[0]}” from ${f.name}` : `${removed.length} steps from ${f.name}`;
+  const why = await reasonBox(`This change deletes ${what}`, f && removed.length > 1 ? removed.join(', ') : '', 'Save');
+  blocked.delete(id);
+  if (why) { addReason(id, why); dirty.add(id); retryAt[id] = 0; saveSoon(50); }
+  else { unsaved.add(id); setStatus('error', 'Not saved: needs a reason'); toast('Not saved. Deleting needs a reason. Undo puts it back.', 'Undo', undo); }
+}
+/* the server refused a save because the document changed elsewhere: take the newer version and say so */
+function takeCurrent(col, id, info) {
+  const name = (S[col][id] && (S[col][id].name || S[col][id].title || S[col][id].label || S[col][id].handle)) || id;
+  if (info && info.current) { S[col][id] = norm(col, id, info.current); S.revs[col][id] = info.rev; }
+  else { delete S[col][id]; delete S.revs[col][id]; }
+  if (col === 'flows') { dropUndo(id); dirty.delete(id); unsaved.delete(id); delete reasons[id]; }
+  toast(info && info.current ? `“${name}” was changed outside this window. The newer version is loaded; your last change to it was not saved.` : `“${name}” was deleted outside this window; your last change to it was not saved.`, 'OK', () => {});
+  if (S.view === 'flow') {
+    if (!curFlow()) { go('home'); return; }
+    S.editing = null; S.selEdge = null; for (const nid of [...S.sel]) if (!nodeById(curFlow(), nid)) S.sel.delete(nid);
+    renderFlow(); renderInspector(); renderBar(); renderLegend();
+  } else renderPage();
+  renderRail();
+}
+/* 'saved', 'stale' (the newer version is loaded instead) or 'failed' (nothing changed; a form stays open to try again) */
+async function saveDocResult(col, id, data) {
+  const before = S[col][id];
+  S[col][id] = Object.assign({}, data, {id});
+  if (S.mode !== 'live') return 'saved';
+  setStatus('saving');
+  try {
+    const o = clone(data); delete o.id;
+    const r = await api('PUT', `/api/${col}/${encodeURIComponent(id)}`, o, {rev:S.revs[col][id] ?? null});
+    S.revs[col][id] = r.rev; setStatus('saved'); return 'saved';
+  } catch (e) {
+    if (e.code === 'stale') { takeCurrent(col, id, e.info); return 'stale'; }
+    if (before) S[col][id] = before; else delete S[col][id];
+    writeFailed(e, true, false); renderAfterDocChange(); return 'failed';
+  }
+}
+const saveDoc = async (col, id, data) => await saveDocResult(col, id, data) === 'saved';
+async function deleteDoc(col, id, why) {
+  const before = S[col][id];
+  delete S[col][id];
+  if (S.mode !== 'live') return true;
+  try { await api('DELETE', `/api/${col}/${encodeURIComponent(id)}`, undefined, {reason:why, rev:S.revs[col][id] ?? null}); }
+  catch (e) {
+    if (e.code === 'stale') { takeCurrent(col, id, e.info); return false; }
+    if (e.code !== 'missing') { if (before) S[col][id] = before; writeFailed(e, true, false); renderAfterDocChange(); return false; }
+  }
+  delete S.revs[col][id]; setStatus('saved'); return true;
+}
+/* retrying: a flow, which this page keeps sending until it lands; an account, folder or part is saved once */
+function writeFailed(e, loud = true, retrying = true) {
+  const code = e && e.code;
+  if (code === 'reason') { setStatus('error', 'Not saved: needs a reason'); if (loud) toast('Not saved. Deleting needs a reason.'); }
+  else if (code === 'forbidden') { setStatus('error', 'Not saved: reload the page'); if (loud) toast("The skill server didn't accept this window. Reload the page, then make the change again."); }
+  else if ((code === 'network' || code === 'server') && !retrying) {
+    setStatus('error', 'Not saved');
+    if (loud) toast(code === 'network' ? "Couldn't save: the skill server isn't answering. Start it with the Agent Playbook shortcut, then try again." : "Couldn't save: the skill server hit an error (see server.log). Try again.");
+  } else if (code === 'network' || code === 'server') {
+    setStatus('error', 'Not saved yet · trying again'); renderBanner();
+    if (loud) toast(code === 'network' ? "Couldn't save: the skill server isn't answering. Open the Agent Playbook shortcut; this page keeps trying." : "Couldn't save: the skill server hit an error (see server.log). This page keeps trying.");
+  } else { setStatus('error', 'Not saved'); if (loud) toast('Not saved: ' + ((e && e.message) || 'the skill server refused the change')); }
+}
+async function openPath(path) {
+  try { await api('POST', '/api/open', {path}); } catch { toast("Couldn't open that. Copy the path instead."); }
+}
+
+/* ---------- undo ---------- */
+const undoStack = [], redoStack = [];
+const snap = id => S.flows[id] ? JSON.stringify(S.flows[id]) : null;
+function beginChange(id, reason) { undoStack.push({id, data:snap(id), reason}); if (undoStack.length > 100) undoStack.shift(); redoStack.length = 0; }
+function restore(entry, into) {
+  into.push({id:entry.id, data:snap(entry.id), reason:entry.reason});
+  addReason(entry.id, entry.reason || (into === redoStack ? 'Undo on the canvas' : 'Redo on the canvas'));
+  if (entry.data == null) delete S.flows[entry.id]; else S.flows[entry.id] = JSON.parse(entry.data);
+  touchFlow(entry.id);
+  if (S.view === 'flow') {
+    if (!S.flows[S.flowId]) { go('home'); return; }
+    S.selEdge = null; S.editing = null; for (const id of [...S.sel]) if (!nodeById(curFlow(), id)) S.sel.delete(id);
+    renderFlow(); renderInspector(); renderBar(); renderLegend();
+  }
+  renderRail();
+}
+/* a flow that was reloaded from disk has a new history: an older snapshot must not be put back over it */
+function dropUndo(id) { for (const st of [undoStack, redoStack]) for (let i = st.length - 1; i >= 0; i--) if (st[i].id === id) st.splice(i, 1); }
+function undo() { const u = undoStack.pop(); if (!u) { toast('Nothing to undo'); return; } restore(u, redoStack); }
+function redo() { const r = redoStack.pop(); if (!r) { toast('Nothing to redo'); return; } restore(r, undoStack); }
+
+/* ---------- boot ---------- */
+async function boot() {
+  $('#brandIcon').innerHTML = ic('flow', 18);
+  $('#searchIcon').innerHTML = ic('search', 15);
+  $('#railClose').innerHTML = ic('close');
+  $('#zoomBox').innerHTML = `<button class="ibtn sm" data-act="zoom-out" aria-label="Zoom out">${ic('zout',15)}</button><span id="zoomPct">100%</span><button class="ibtn sm" data-act="zoom-in" aria-label="Zoom in">${ic('zin',15)}</button><button class="ibtn sm" data-act="fit" aria-label="Fit to screen" title="Fit (F)">${ic('fit',15)}</button>`;
+  renderRailFoot(); route();
+  try { loadAll((await api('GET', '/api/all'))); S.mode = 'live'; S.canWrite = true; }
+  catch (err) {
+    // no local server: a published copy (for example GitHub Pages) reads the exported store.json, view only
+    try { const r = await fetch('store.json', {cache:'no-store'}); if (!r.ok) throw 0; loadAll({data:await r.json(), stamp:''}); S.mode = 'static'; S.canWrite = false; }
+    catch { S.mode = 'offline'; S.bootError = err && err.status ? (err.message || 'error') : ''; }
+  }
+  S.ready = true; afterLoad();
+  if (S.mode === 'live') {
+    setInterval(poll, 4000);
+    // back in view: look for outside changes; going out of view: send what is waiting now rather than after the pause
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); else if (dirty.size) { clearTimeout(saveTimer); flush(); } });
+    window.addEventListener('beforeunload', e => { if (pendingWork()) { e.preventDefault(); e.returnValue = ''; } });
+  }
+}
+/* something this window has not got onto disk yet: closing the tab now would lose it */
+const pendingWork = () => !!(dirty.size || unsaved.size || blocked.size || Object.values(saving).some(Boolean));
+function countProblems(r) { let n = (r.errors || []).length; for (const c of Object.values(r.invalid || {})) n += Object.keys(c).length; return n; }
+function loadAll(r) {
+  S.revs = emptyRevs();
+  for (const col of COLS) {
+    S[col] = {};
+    for (const [id, v] of Object.entries(r.data[col] || {})) { S[col][id] = norm(col, id, v); const rev = r.revs && r.revs[col] && r.revs[col][id]; if (rev) S.revs[col][id] = rev; }
+  }
+  S.stamp = r.stamp; S.auditStamp = r.audit; S.problems = countProblems(r);
+}
+/* a flow with unsaved work here, or one being dragged or edited right now, is left alone until that is done */
+const busy = (col, id) => col === 'flows' && (dirty.has(id) || !!saving[id] || blocked.has(id) || unsaved.has(id) || (S.view === 'flow' && S.flowId === id && (!!drag || !!S.editing)));
+/* take what changed on disk (by Claude or another window), one document at a time, by revision */
+function mergeAll(r) {
+  const changed = []; let waiting = false;
+  for (const col of COLS) {
+    const revs = (r.revs && r.revs[col]) || {};
+    for (const [id, rev] of Object.entries(revs)) {
+      if (S.revs[col][id] === rev) continue;
+      if (busy(col, id)) { waiting = true; continue; }
+      S[col][id] = norm(col, id, r.data[col][id]); S.revs[col][id] = rev; changed.push(col + '/' + id);
+      if (col === 'flows') dropUndo(id);
+    }
+    for (const id of Object.keys(S.revs[col])) {
+      if (id in revs) continue;
+      if (busy(col, id)) { waiting = true; continue; }
+      delete S[col][id]; delete S.revs[col][id]; changed.push(col + '/' + id);
+      if (col === 'flows') dropUndo(id);
+    }
+  }
+  S.problems = countProblems(r);
+  if (!waiting) S.stamp = r.stamp;   // otherwise look again on the next poll
+  return changed;
+}
+let polling = false;
+async function poll() {
+  if (document.hidden || polling) return;
+  polling = true;
+  try {
+    const st = await api('GET', '/api/stamp');
+    if (st.audit !== S.auditStamp) { S.auditStamp = st.audit; auditCache = null; if (S.view === 'history' && S.hf.tab === 'posted' && modal.hidden) pageHistory(); }
+    if (st.stamp !== S.stamp) { const changed = mergeAll(await api('GET', '/api/all')); if (changed.length) afterMerge(); }
+    if ($('#status').dataset.k === 'offline') setStatus(dirty.size ? 'saving' : 'saved');
+  } catch { if (!dirty.size && !unsaved.size) setStatus('offline'); }
+  finally { polling = false; }
+}
+function afterMerge() {
+  if (S.view === 'flow' && !curFlow()) { toast('This flow was removed.'); go('home'); return; }
+  renderRail();
+  if (S.view === 'flow') {
+    if (drag || S.editing || !modal.hidden) return;   // never pull a form out from under the person; the next action redraws
+    for (const id of [...S.sel]) if (!nodeById(curFlow(), id)) S.sel.delete(id);
+    if (S.selEdge && !curFlow().edges.some(e => e.id === S.selEdge)) S.selEdge = null;
+    renderFlow(); renderInspector(); renderBar(); renderLegend(); applyCam();
+  } else if (modal.hidden && S.view !== 'history') renderPage();
+}
+function afterLoad() {
+  setStatus(S.mode === 'live' ? 'saved' : S.mode === 'static' ? 'static' : 'offline');
+  renderRailFoot();
+  if (S.problems) toast(`${S.problems} document${S.problems > 1 ? 's have' : ' has'} a problem. Run “python pb.py check” to see what.`, 'OK', () => {});
+  if (S.pending) { const p = S.pending; S.pending = null; openFlow(p.id, p.focus); }
+  else route();
+}
+function renderAll() { renderRail(); renderBar(); if (S.view === 'flow') { renderFlow(); renderInspector(); renderLegend(); } else renderPage(); renderRailFoot(); }
+
+/* ---------- routing ---------- */
+function route() {
+  let h = location.hash.slice(1);
+  try { h = decodeURIComponent(h); } catch {}
+  if (!h || h === 'home' || h === 'map') setView('home');
+  else if (h === 'accounts' || h === 'folders' || h === 'parts' || h === 'history') setView(h);
+  else openFlow(h);
+}
+window.addEventListener('hashchange', route);
+function go(h, focus) {
+  if (focus) S.pendingFocus = focus;
+  if (location.hash.slice(1) !== h) location.hash = h; else route();
+}
+function showBoard(on) { board.hidden = !on; page.hidden = on; }
+function setView(v) {
+  S.view = v; S.sel.clear(); S.selEdge = null; S.editing = null; histShown = null;
+  showBoard(false); closeInspector(); closeMenu();
+  renderBar(); renderRail(); renderPage(); closeRail(); page.scrollTop = 0;
+}
+function openFlow(id, focus) {
+  focus = focus || S.pendingFocus; S.pendingFocus = null;
+  if (!S.flows[id]) {
+    if (!S.ready) { S.pending = {id, focus}; S.view = 'flow'; showBoard(false); page.innerHTML = loadingHTML(); renderBar(); return; }
+    toast("That flow doesn't exist."); go('home'); return;
+  }
+  const changed = S.flowId !== id || S.view !== 'flow';
+  S.view = 'flow'; S.flowId = id; S.lastFlow = id; lsSet('pb-last', id);
+  if (changed) { S.sel.clear(); S.selEdge = null; S.editing = null; S.hiKind = null; }
+  showBoard(true); closeMenu(); renderBar(); renderRail(); renderFlow(); renderLegend();
+  if (!S.cams[id]) { S.cams[id] = {x:0, y:0, z:1}; startView(); } else applyCam();
+  if (focus) { const n = nodeById(curFlow(), focus); if (n) { selectOnly(n.id); centerOn(n); } }
+  else renderInspector();
+  closeRail();
+}
+
+/* ---------- camera ---------- */
+const cam = () => S.cams[S.flowId] || (S.cams[S.flowId] = {x:60, y:60, z:1});
+/* the camera is written to the page once a frame, however many pointer or wheel events arrive in that frame */
+let camRaf = null;
+function applyCam() { if (camRaf == null) camRaf = requestAnimationFrame(paintCam); }
+function paintCam() {
+  camRaf = null; const c = cam();
+  world.style.transform = `translate(${c.x}px,${c.y}px) scale(${c.z})`;
+  const g = 22 * c.z; board.style.backgroundSize = `${g}px ${g}px`; board.style.backgroundPosition = `${c.x}px ${c.y}px`;
+  const zp = $('#zoomPct'); if (zp) zp.textContent = Math.round(c.z * 100) + '%';
+  drawMini();
+}
+/* the board's place on screen, read once per gesture instead of on every move (a read after a write forces a layout) */
+let boardBox = null;
+const boardRect = () => boardBox || (boardBox = board.getBoundingClientRect());
+if (typeof ResizeObserver === 'function') new ResizeObserver(() => { boardBox = null; }).observe(board);
+function toWorld(cx, cy) { const r = boardRect(), c = cam(); return [(cx - r.left - c.x) / c.z, (cy - r.top - c.y) / c.z]; }
+function zoomAt(cx, cy, factor) {
+  const c = cam(), r = boardRect(); const px = cx - r.left, py = cy - r.top;
+  const z = Math.min(1.8, Math.max(0.18, c.z * factor));
+  c.x = px - (px - c.x) * (z / c.z); c.y = py - (py - c.y) * (z / c.z); c.z = z; applyCam();
+}
+const zoomCenter = f => { const r = boardRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, f); };
+const sizeOf = n => sizes.get(n.id) || {w:NODE_W, h:96};
+function bounds(f) {
+  if (!f.nodes.length) return {x:0, y:0, w:600, h:300};
+  let a = 1e9, b = 1e9, c = -1e9, d = -1e9;
+  for (const n of f.nodes) { const s = sizeOf(n); a = Math.min(a, n.x); b = Math.min(b, n.y); c = Math.max(c, n.x + s.w); d = Math.max(d, n.y + s.h); }
+  return {x:a, y:b, w:c - a, h:d - b};
+}
+/* Fit shows the whole flow when it can still be read that way. A flow so wide (or tall) that it would shrink below
+   FIT_READ_MIN is shown from its left (or top) edge at READ_Z instead, centred on the other axis; fitting again
+   straight away shows all of it, and once more goes back. */
+const READ_Z = 0.75, FIT_READ_MIN = 0.55;
+const camKey = c => `${c.x.toFixed(1)},${c.y.toFixed(1)},${c.z.toFixed(4)}`;
+function fit(all) {
+  const f = curFlow(); if (!f) return '';
+  const b = bounds(f), W = board.clientWidth, H = board.clientHeight; if (!W || !H) return '';
+  const padX = 60, padTop = 50, padBot = 90, w = W - padX * 2, h = H - padTop - padBot;
+  let z = Math.min(1.05, Math.max(0.18, Math.min(w / b.w, h / b.h))), mode = 'all';
+  if (!all && z < FIT_READ_MIN) { z = READ_Z; mode = 'read'; }
+  const c = cam(); c.z = z;
+  c.x = b.w * z <= w ? (W - b.w * z) / 2 - b.x * z : padX - b.x * z;
+  c.y = b.h * z <= h ? padTop + (h - b.h * z) / 2 - b.y * z : padTop - b.y * z;
+  c.auto = mode; c.forced = !!all; c.at = camKey(c); applyCam();
+  return mode;
+}
+/* F and the fit button: a second press on an untouched readable fit shows the whole flow */
+function fitKey() {
+  const c = cam(); const again = c.at === camKey(c);
+  const mode = fit(again && c.auto === 'read');
+  if (mode === 'read') readHint();
+}
+function readHint() { if (!S.readHint && $('#toast').hidden) { S.readHint = true; toast('Zoomed to a readable size from the start. Press F again to see the whole flow.', 'OK', () => {}); } }
+function startView() {
+  // phones: open on the start node at a readable size; wider screens: fit the flow (readably, see fit)
+  const f = curFlow(); if (!f) return;
+  if (board.clientWidth >= 640) { if (fit() === 'read') readHint(); return; }
+  const s0 = f.nodes.find(n => kindOf(n) === 'start') || f.nodes[0]; if (!s0) { fit(); return; }
+  const c = cam(), z = 0.66, s = sizeOf(s0); c.z = z; c.x = 20 - s0.x * z; c.y = board.clientHeight * 0.4 - (s0.y + s.h / 2) * z;
+  c.auto = 'start'; c.at = camKey(c); applyCam();
+}
+/* a view the page chose (opening the flow, or F) follows the window when it is resized; once the person has moved
+   the camera it stays where they put it */
+let resizeRaf = null;
+window.addEventListener('resize', () => {
+  boardBox = null;
+  if (S.view !== 'flow' || resizeRaf != null) return;
+  resizeRaf = requestAnimationFrame(() => {
+    resizeRaf = null; const c = cam();
+    if (c.auto && c.at === camKey(c)) { if (c.auto === 'start') startView(); else fit(c.forced); } else drawMini();
+  });
+});
+function centerOn(n) {
+  const s = sizeOf(n), c = cam(); const z = Math.max(c.z, 0.8); c.z = z;
+  c.x = board.clientWidth / 2 - (n.x + s.w / 2) * z; c.y = board.clientHeight / 2 - (n.y + s.h / 2) * z; applyCam();
+}
+/* the details panel takes width from the board: slide the board just enough that the node it describes stays in view */
+function keepInView(n) {
+  if (!n || board.hidden) return;
+  const c = cam(), s = sizeOf(n), W = board.clientWidth, m = 24; if (!W) return;
+  const l = n.x * c.z + c.x, r = (n.x + s.w) * c.z + c.x; let dx = 0;
+  if (r > W - m) dx = W - m - r;
+  if (l + dx < m) dx = m - l;
+  if (dx) { c.x += dx; applyCam(); }
+}
+function viewCenter() { const r = boardRect(); return toWorld(r.left + r.width / 2, r.top + r.height / 2); }
+const snapG = v => Math.round(v / GRID) * GRID;
+
+/* ---------- board render ---------- */
+function nodeHTML(raw) {
+  const n = view(raw);
+  const k = KINDS[n.kind] || KINDS.step; let title = n.title, sub = n.sub;
+  if (n.kind === 'account' && n.account && S.accounts[n.account]) { const a = S.accounts[n.account]; if (!title || title === 'Untitled') title = a.handle || a.label; if (!sub) sub = `${a.platform} · ${a.status || ''}`; }
+  const b = [];
+  if (n.folders?.length) b.push(`<span class="badge" title="Folders">${ic('folder',11)}${n.folders.length}</span>`);
+  if (n.checks?.length) b.push(`<span class="badge" title="Checklist items">${ic('list',11)}${n.checks.length}</span>`);
+  if (n.links?.length) b.push(`<span class="badge" title="Links">${ic('link',11)}${n.links.length}</span>`);
+  if (n.kind === 'goto' && n.goto) b.push(`<span class="badge go">${ic('arrowR',11)}${esc(S.flows[n.goto]?.name || (n.goto === 'map' ? 'Overview' : n.goto))}</span>`);
+  if (raw.part) b.push(`<span class="badge" title="This step comes from the parts library">${ic('library',11)}part</span>`);
+  const cls = ['node', 'k-' + n.kind]; if (S.sel.has(n.id)) cls.push('sel'); if (S.hiKind && S.hiKind !== n.kind) cls.push('dim');
+  return `<div class="${cls.join(' ')}" data-id="${esc(n.id)}" style="left:${n.x}px;top:${n.y}px"><span class="port in"></span><div class="hd"><span class="ic">${ic(k.icon,16)}</span><div class="tx"><div class="kl">${k.label}</div><div class="t">${esc(title)}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ''}</div></div>${b.length ? `<div class="ft">${b.join('')}</div>` : ''}${n.editedAt ? '<span class="edot" title="Edited by you"></span>' : ''}${S.canWrite ? '<span class="port out" title="Drag to connect"></span>' : ''}</div>`;
+}
+function renderFlow() {
+  const f = curFlow();
+  if (!f) { nodesEl.innerHTML = ''; wireG.innerHTML = ''; labelsEl.innerHTML = ''; return; }
+  nodesEl.innerHTML = f.nodes.map(nodeHTML).join('');
+  measure(); drawWires(); drawMiniSoon();
+  const msg = $('#boardMsg');
+  if (!f.nodes.length) { msg.hidden = false; msg.innerHTML = `<div><h3>Empty flow</h3><p>${S.canWrite ? 'Use Add, or double-click the board, to place the first step.' : 'Nothing here yet.'}</p></div>`; }
+  else msg.hidden = true;
+}
+function wirePath(a, b) {
+  const sa = sizeOf(a), sb = sizeOf(b);
+  const dx = (b.x + sb.w / 2) - (a.x + sa.w / 2), dy = (b.y + sb.h / 2) - (a.y + sa.h / 2);
+  let s1, s2;
+  if (Math.abs(dx) > Math.max(sa.w, sb.w) * 0.7) { s1 = dx > 0 ? 'r' : 'l'; s2 = dx > 0 ? 'l' : 'r'; }
+  else { s1 = dy > 0 ? 'b' : 't'; s2 = dy > 0 ? 't' : 'b'; }
+  const pt = (n, s, side) => side === 'r' ? [n.x + s.w, n.y + s.h / 2] : side === 'l' ? [n.x, n.y + s.h / 2] : side === 't' ? [n.x + s.w / 2, n.y] : [n.x + s.w / 2, n.y + s.h];
+  const p1 = pt(a, sa, s1), p2 = pt(b, sb, s2);
+  const V = {r:[1,0], l:[-1,0], t:[0,-1], b:[0,1]};
+  const dist = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]); const k = Math.max(28, Math.min(170, dist * 0.45));
+  const c1 = [p1[0] + V[s1][0] * k, p1[1] + V[s1][1] * k], c2 = [p2[0] + V[s2][0] * k, p2[1] + V[s2][1] * k];
+  const mx = (p1[0] + 3 * c1[0] + 3 * c2[0] + p2[0]) / 8, my = (p1[1] + 3 * c1[1] + 3 * c2[1] + p2[1]) / 8;
+  return {d:`M${p1[0].toFixed(1)},${p1[1].toFixed(1)} C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`, mx, my};
+}
+/* node sizes, for the wires and the fit; read in one pass after the nodes are written. Returns whether any changed. */
+function measure() {
+  let changed = false; const seen = new Map();
+  for (const el of nodesEl.children) { const s = {w:el.offsetWidth, h:el.offsetHeight}, o = sizes.get(el.dataset.id); if (!o || o.w !== s.w || o.h !== s.h) changed = true; seen.set(el.dataset.id, s); }
+  if (seen.size !== sizes.size) changed = true;
+  sizes.clear(); for (const [k, v] of seen) sizes.set(k, v);
+  return changed;
+}
+/* the web font can arrive after the first drawing and change how titles wrap: measure again, and move the wires */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (S.view === 'flow' && curFlow() && measure()) { drawWires(); drawMiniSoon(); } });
+/* each wire's look: the classes and arrowhead for its selection and highlight state */
+function wireLook(e, a, b) {
+  const hot = S.sel.has(e.from) || S.sel.has(e.to), sel = S.selEdge === e.id, att = e.type === 'attach';
+  const dim = S.hiKind && kindOf(a) !== S.hiKind && kindOf(b) !== S.hiKind;
+  return {sel, cls:`wire${att ? ' att' : ''}${hot ? ' hot' : ''}${sel ? ' sel' : ''}${dim ? ' dim' : ''}`, marker:att ? '' : `url(#${sel || hot ? 'arrH' : 'arr'})`};
+}
+let wireEls = new Map();   // edge id -> its hit path, wire path and label, so a drag or a selection updates them in place
+function drawWires() {
+  const f = curFlow(); if (!f) return;
+  const by = new Map(f.nodes.map(n => [n.id, n])); let s = '', l = ''; const drawn = [];
+  for (const e of f.edges) {
+    const a = by.get(e.from), b = by.get(e.to); if (!a || !b) continue;
+    const p = wirePath(a, b), w = wireLook(e, a, b); drawn.push(e.id);
+    s += `<path class="hit" data-e="${esc(e.id)}" d="${p.d}"/><path class="${w.cls}" d="${p.d}"${w.marker ? ` marker-end="${w.marker}"` : ''}/>`;
+    if (e.label) l += `<div class="elabel${w.sel ? ' sel' : ''}" data-e="${esc(e.id)}" style="left:${p.mx}px;top:${p.my}px">${esc(e.label)}</div>`;
+  }
+  wireG.innerHTML = s; labelsEl.innerHTML = l;
+  wireEls = new Map(); const kids = wireG.children;
+  if (kids.length === drawn.length * 2) drawn.forEach((id, i) => wireEls.set(id, {hit:kids[2 * i], wire:kids[2 * i + 1], label:null}));
+  for (const el of labelsEl.children) { const w = wireEls.get(el.dataset.e); if (w) w.label = el; }
+}
+/* while nodes are dragged only their own wires move */
+function moveWires(ids) {
+  const f = curFlow(); if (!f) return;
+  const by = new Map(f.nodes.map(n => [n.id, n]));
+  for (const e of f.edges) {
+    if (!ids.has(e.from) && !ids.has(e.to)) continue;
+    const w = wireEls.get(e.id), a = by.get(e.from), b = by.get(e.to); if (!a || !b) continue;
+    if (!w || (e.label && !w.label)) { drawWires(); return; }
+    const p = wirePath(a, b); w.hit.setAttribute('d', p.d); w.wire.setAttribute('d', p.d);
+    if (w.label) { w.label.style.left = p.mx + 'px'; w.label.style.top = p.my + 'px'; }
+  }
+}
+/* the selection or the highlighted kind changed: restyle the wires without rebuilding them */
+function styleWires() {
+  const f = curFlow(); if (!f) return;
+  const by = new Map(f.nodes.map(n => [n.id, n]));
+  for (const e of f.edges) {
+    const a = by.get(e.from), b = by.get(e.to); if (!a || !b) continue;
+    const w = wireEls.get(e.id); if (!w) { drawWires(); return; }
+    const look = wireLook(e, a, b); w.wire.setAttribute('class', look.cls);
+    if (look.marker) w.wire.setAttribute('marker-end', look.marker);
+    if (w.label) w.label.classList.toggle('sel', look.sel);
+  }
+}
+let wireRaf = null, wireIds = null;
+const rafWires = ids => { wireIds = ids; if (wireRaf) return; wireRaf = requestAnimationFrame(() => { wireRaf = null; moveWires(wireIds); drawMini(); }); };
+function renderLegend() {
+  const f = curFlow(); if (!f) return;
+  const counts = {}; for (const n of f.nodes) { const k = kindOf(n); counts[k] = (counts[k] || 0) + 1; }
+  $('#legend').innerHTML = KIND_ORDER.filter(k => counts[k]).map(k => `<button class="lk k-${k}${S.hiKind === k ? ' on' : ''}" data-act="hi-kind" data-kind="${k}" title="Highlight ${KINDS[k].label.toLowerCase()} nodes"><i></i>${KINDS[k].label}<b>${counts[k]}</b></button>`).join('');
+}
+
+/* minimap */
+let miniRaf = null; const drawMiniSoon = () => { if (miniRaf) return; miniRaf = requestAnimationFrame(() => { miniRaf = null; drawMini(); }); };
+let miniT = null;
+function drawMini() {
+  const cv = $('#mini'); const f = curFlow(); if (!cv || !f || board.hidden || cv.offsetParent === null) return;
+  const ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
+  const cs = getComputedStyle(document.documentElement);
+  const b = bounds(f), c = cam(); const vw = board.clientWidth / c.z, vh = board.clientHeight / c.z, vx = -c.x / c.z, vy = -c.y / c.z;
+  const x0 = Math.min(b.x, vx), y0 = Math.min(b.y, vy), x1 = Math.max(b.x + b.w, vx + vw), y1 = Math.max(b.y + b.h, vy + vh);
+  const pad = 12, sc = Math.min((W - pad * 2) / (x1 - x0), (H - pad * 2) / (y1 - y0));
+  const ox = pad + ((W - pad * 2) - (x1 - x0) * sc) / 2 - x0 * sc, oy = pad + ((H - pad * 2) - (y1 - y0) * sc) / 2 - y0 * sc;
+  const tone = {};   // one style lookup per kind, not one per node
+  for (const n of f.nodes) { const s = sizeOf(n), nk = kindOf(n); ctx.fillStyle = tone[nk] ??= (cs.getPropertyValue('--k-' + nk).trim() || '#888'); ctx.globalAlpha = S.hiKind && S.hiKind !== nk ? .25 : .85; ctx.fillRect(ox + n.x * sc, oy + n.y * sc, Math.max(3, s.w * sc), Math.max(2, s.h * sc)); }
+  ctx.globalAlpha = 1; ctx.strokeStyle = cs.getPropertyValue('--accent').trim(); ctx.lineWidth = 2;
+  ctx.strokeRect(ox + vx * sc, oy + vy * sc, vw * sc, vh * sc);
+  miniT = {ox, oy, sc};
+}
+function miniMove(e) {
+  if (!miniT) return; const cv = $('#mini'), r = cv.getBoundingClientRect(); const k = cv.width / r.width;
+  const wx = ((e.clientX - r.left) * k - miniT.ox) / miniT.sc, wy = ((e.clientY - r.top) * k - miniT.oy) / miniT.sc;
+  const c = cam(); c.x = board.clientWidth / 2 - wx * c.z; c.y = board.clientHeight / 2 - wy * c.z; applyCam();
+}
+$('#mini').addEventListener('pointerdown', e => { e.stopPropagation(); const cv = e.currentTarget; cv.setPointerCapture(e.pointerId); miniMove(e); const mv = ev => miniMove(ev); const up = () => { cv.removeEventListener('pointermove', mv); cv.removeEventListener('pointerup', up); }; cv.addEventListener('pointermove', mv); cv.addEventListener('pointerup', up); });
+
+/* ---------- board interaction ---------- */
+let drag = null; const pointers = new Map(); let pinch = null;
+board.addEventListener('pointerdown', e => {
+  if (S.view !== 'flow' || e.target.closest('.boardui')) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  closeMenu(); boardBox = null;
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pointers.size === 2) { const [p1, p2] = [...pointers.values()]; const c = cam(); pinch = {d:Math.hypot(p1.x - p2.x, p1.y - p2.y), mx:(p1.x + p2.x) / 2, my:(p1.y + p2.y) / 2, z:c.z, x:c.x, y:c.y}; drag = null; return; }
+  const t = e.target; const port = t.closest('.port.out'); const nodeEl = t.closest('.node'); const hit = t.closest('.hit,.elabel');
+  try { board.setPointerCapture(e.pointerId); } catch {}
+  if (port && S.canWrite) { drag = {type:'wire', from:port.closest('.node').dataset.id}; return; }
+  if (nodeEl) {
+    const id = nodeEl.dataset.id;
+    if (e.shiftKey || e.ctrlKey || e.metaKey) { toggleSel(id); drag = null; return; }
+    if (!S.sel.has(id)) selectOnly(id, false);
+    const f = curFlow(); const ids = [...S.sel]; const els = new Map([...nodesEl.children].map(el => [el.dataset.id, el]));
+    drag = {type:'node', start:toWorld(e.clientX, e.clientY), orig:ids.map(i => { const n = nodeById(f, i); return [i, n.x, n.y, n, els.get(i)]; }).filter(o => o[3]), ids:new Set(ids), moved:false, clickId:id};
+    return;
+  }
+  if (hit) { selectEdge(hit.dataset.e); drag = null; return; }
+  if (e.shiftKey) { drag = {type:'box', sx:e.clientX, sy:e.clientY, moved:false}; return; }
+  const c = cam(); drag = {type:'pan', sx:e.clientX, sy:e.clientY, cx:c.x, cy:c.y, moved:false};
+});
+board.addEventListener('pointermove', e => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pinch && pointers.size === 2) {
+    const [p1, p2] = [...pointers.values()]; const d = Math.hypot(p1.x - p2.x, p1.y - p2.y); const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+    const r = boardRect(); const c = cam(); const z = Math.min(1.8, Math.max(0.18, pinch.z * d / pinch.d));
+    const wx = (pinch.mx - r.left - pinch.x) / pinch.z, wy = (pinch.my - r.top - pinch.y) / pinch.z;
+    c.z = z; c.x = mx - r.left - wx * z; c.y = my - r.top - wy * z; applyCam(); return;
+  }
+  if (!drag) return;
+  if (drag.type === 'pan') {
+    const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy; if (!drag.moved && Math.hypot(dx, dy) < 3) return;
+    drag.moved = true; board.classList.add('panning'); const c = cam(); c.x = drag.cx + dx; c.y = drag.cy + dy; applyCam();
+  } else if (drag.type === 'node') {
+    if (!S.canWrite) return;
+    const [wx, wy] = toWorld(e.clientX, e.clientY); const dx = wx - drag.start[0], dy = wy - drag.start[1];
+    if (!drag.moved && Math.hypot(dx, dy) * cam().z < 4) return;
+    if (!drag.moved) { drag.moved = true; beginChange(S.flowId); }
+    for (const [, ox, oy, n, el] of drag.orig) { n.x = snapG(ox + dx); n.y = snapG(oy + dy); if (el) { el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; } }
+    rafWires(drag.ids);
+  } else if (drag.type === 'wire') {
+    const f = curFlow(); const a = nodeById(f, drag.from); if (!a) return; const s = sizeOf(a);
+    const p1 = [a.x + s.w, a.y + s.h / 2]; const p2 = toWorld(e.clientX, e.clientY); const k = Math.max(30, Math.abs(p2[0] - p1[0]) * 0.45);
+    ghost.setAttribute('d', `M${p1[0]},${p1[1]} C${p1[0] + k},${p1[1]} ${p2[0] - k},${p2[1]} ${p2[0]},${p2[1]}`);
+  } else if (drag.type === 'box') {
+    drag.moved = true; const r = boardRect(); const m = $('#marquee'); m.hidden = false;
+    const x = Math.min(e.clientX, drag.sx) - r.left, y = Math.min(e.clientY, drag.sy) - r.top;
+    Object.assign(m.style, {left:x + 'px', top:y + 'px', width:Math.abs(e.clientX - drag.sx) + 'px', height:Math.abs(e.clientY - drag.sy) + 'px'});
+  }
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null;
+  if (!drag) return; const d = drag; drag = null; board.classList.remove('panning');
+  if (d.type === 'pan' && !d.moved) { if (!S.editing) clearSel(); }
+  else if (d.type === 'node') { if (d.moved) { touchFlow(S.flowId); drawWires(); } else { selectOnly(d.clickId); } }
+  else if (d.type === 'wire') {
+    ghost.setAttribute('d', '');
+    const el = document.elementFromPoint(e.clientX, e.clientY); const tgt = el && el.closest('.node');
+    if (tgt && tgt.dataset.id !== d.from) addEdge(d.from, tgt.dataset.id);
+    else if (!tgt) { const [wx, wy] = toWorld(e.clientX, e.clientY); kindMenu(e.clientX, e.clientY, kind => addNode(kind, wx, wy - 40, d.from)); }
+  } else if (d.type === 'box') {
+    const m = $('#marquee'); m.hidden = true; if (!d.moved) return;
+    const [ax, ay] = toWorld(Math.min(d.sx, e.clientX), Math.min(d.sy, e.clientY)); const [bx, by] = toWorld(Math.max(d.sx, e.clientX), Math.max(d.sy, e.clientY));
+    S.sel = new Set(curFlow().nodes.filter(n => { const s = sizeOf(n); return n.x < bx && n.x + s.w > ax && n.y < by && n.y + s.h > ay; }).map(n => n.id));
+    S.selEdge = null; S.editing = null; refreshSel(); renderInspector();
+  }
+}
+board.addEventListener('pointerup', endPointer);
+board.addEventListener('pointercancel', endPointer);
+board.addEventListener('lostpointercapture', endPointer);   // a pointer whose up was never seen must not linger and turn the next touch into a pinch
+board.addEventListener('wheel', e => {
+  if (S.view !== 'flow' || e.target.closest('.boardui')) return; e.preventDefault();
+  // Firefox reports a mouse wheel in lines (deltaMode 1), some devices in pages (2): turn both into pixels
+  const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? board.clientHeight || 800 : 1; const dy = e.deltaY * k, dx = e.deltaX * k;
+  if (e.shiftKey) { const c = cam(); c.x -= (dy || dx); applyCam(); return; }
+  zoomAt(e.clientX, e.clientY, Math.exp(-dy * (e.ctrlKey ? 0.012 : 0.0016)));
+}, {passive:false});
+board.addEventListener('dblclick', e => {
+  // pointer capture retargets click events to the board, so look up what is really under the pointer
+  const t = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+  if (t.closest('.boardui')) return;
+  const nodeEl = t.closest('.node');
+  if (nodeEl) { const n = view(nodeById(curFlow(), nodeEl.dataset.id)); if (n && n.kind === 'goto' && n.goto) { followGoto(n.goto); return; } if (S.canWrite) { S.sel = new Set([nodeEl.dataset.id]); S.selEdge = null; refreshSel(); ACT.edit(); } return; }
+  if (S.canWrite && !t.closest('.hit,.elabel')) { const [wx, wy] = toWorld(e.clientX, e.clientY); kindMenu(e.clientX, e.clientY, kind => addNode(kind, wx - NODE_W / 2, wy - 40)); }
+});
+
+/* ---------- selection ---------- */
+function selectOnly(id, open = true) { S.sel = new Set([id]); S.selEdge = null; if (S.editing !== id) S.editing = null; refreshSel(); if (open) renderInspector(); }
+function toggleSel(id) { S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); S.selEdge = null; S.editing = null; refreshSel(); renderInspector(); }
+function clearSel() { S.sel.clear(); S.selEdge = null; S.editing = null; refreshSel(); closeInspector(); }
+function selectEdge(id) { S.sel.clear(); S.selEdge = id; S.editing = null; refreshSel(); renderInspector(); }
+function refreshSel() { for (const el of nodesEl.children) el.classList.toggle('sel', S.sel.has(el.dataset.id)); styleWires(); }
+function focusNode(flowId, nodeId) { if (S.view === 'flow' && S.flowId === flowId) { const n = nodeById(curFlow(), nodeId); if (n) { selectOnly(n.id); centerOn(n); } } else go(flowId, nodeId); }
+function followGoto(id) { if (id === 'map' || id === 'home') { go('home'); return; } if (S.flows[id]) go(id); else toast("That flow doesn't exist yet."); }
+
+/* ---------- edits ---------- */
+function addNode(kind, x, y, connectFrom, ref) {
+  const f = curFlow(); if (!f || !S.canWrite) return;
+  // a goto or an account node is nothing without its target, so that is chosen first
+  if (kind === 'goto' && !ref) { targetPicker(f, 'Which flow does it open?', t => addNode(kind, x, y, connectFrom, {goto:t, title:t === 'map' ? 'Overview' : S.flows[t].name})); return; }
+  if (kind === 'account' && !ref) { accountPicker('Which account?', a => addNode(kind, x, y, connectFrom, {account:a.id, title:a.handle || a.label})); return; }
+  beginChange(f.id);
+  const n = Object.assign({id:uid(f.id.slice(0, 12)), kind, title:kind === 'start' ? 'Start' : 'New ' + KINDS[kind].label.replace(/^(?!QC)./, c => c.toLowerCase()), sub:'', body:'', x:snapG(x), y:snapG(y), editedAt:nowISO()}, ref || {});
+  f.nodes.push(n);
+  if (connectFrom) f.edges.push({id:`${connectFrom}>${n.id}`, from:connectFrom, to:n.id, type:SIDE_KINDS.includes(kind) ? 'attach' : 'flow', label:''});
+  touchFlow(f.id); renderFlow(); renderLegend();
+  S.sel = new Set([n.id]); S.selEdge = null; S.editing = n.id; refreshSel(); renderInspector();
+  setTimeout(() => { const t = $('#nf_title'); if (t) { t.focus(); t.select(); } }, 30);
+}
+function addNodeFromPart(part, x, y) {
+  const f = curFlow(); if (!f || !S.canWrite) return;
+  beginChange(f.id);
+  const n = {id:uid(f.id.slice(0, 12)), part:part.id, x:snapG(x), y:snapG(y), editedAt:nowISO()};   // a reference: the text stays in the part
+  f.nodes.push(n); touchFlow(f.id); renderFlow(); renderLegend(); selectOnly(n.id); centerOn(n);
+  toast(`Added “${part.title}”`);
+}
+function partToNode(p) { const o = {}; for (const k of ['kind','title','sub','body','checks','links','folders','src','goto','account']) if (p[k] != null) o[k] = clone(p[k]); if (!KINDS[o.kind]) o.kind = 'step'; return o; }
+function addEdge(from, to) {
+  const f = curFlow(); if (f.edges.some(e => e.from === from && e.to === to)) { toast('Already connected'); return; }
+  beginChange(f.id);
+  const a = nodeById(f, from), b = nodeById(f, to);
+  const att = [kindOf(a), kindOf(b)].some(k => SIDE_KINDS.includes(k));
+  const e = {id:`${from}>${to}`, from, to, type:att ? 'attach' : 'flow', label:''};
+  f.edges.push(e); touchFlow(f.id); drawWires(); toast(att ? 'Attached' : 'Connected', 'Undo', undo);
+}
+async function deleteSelection() {
+  let f = curFlow(); if (!f || !S.canWrite) return;
+  if (S.selEdge) {
+    const e = f.edges.find(x => x.id === S.selEdge); if (!e) return;
+    const a = nodeById(f, e.from), b = nodeById(f, e.to);
+    const why = await reasonBox(`Delete the connection from “${view(a)?.title || e.from}” to “${view(b)?.title || e.to}”?`, `In ${f.name}. Undo brings it back, and History keeps the version from before.`);
+    f = S.flows[f.id];
+    if (!why || !f || S.flowId !== f.id) return;
+    beginChange(f.id, why); addReason(f.id, why);
+    f.edges = f.edges.filter(x => x.id !== e.id); S.selEdge = null; touchFlow(f.id); drawWires(); closeInspector(); toast('Connection deleted', 'Undo', undo); return;
+  }
+  if (!S.sel.size) return;
+  const ids = new Set(S.sel); const n = ids.size; const one = n === 1 ? nodeById(f, [...ids][0]) : null;
+  const why = await reasonBox(one ? `Delete “${view(one).title || 'this step'}”?` : `Delete ${n} nodes?`, `From ${f.name}. Undo brings ${n === 1 ? 'it' : 'them'} back, and History keeps the version from before.`);
+  f = S.flows[f.id];
+  if (!why || !f || S.flowId !== f.id) return;
+  beginChange(f.id, why); addReason(f.id, why);
+  f.nodes = f.nodes.filter(x => !ids.has(x.id)); f.edges = f.edges.filter(e => !ids.has(e.from) && !ids.has(e.to));
+  S.sel.clear(); S.editing = null; touchFlow(f.id); renderFlow(); renderLegend(); closeInspector();
+  toast(n === 1 ? 'Node deleted' : `${n} nodes deleted`, 'Undo', undo);
+}
+let clip = null;
+function copySel() {
+  const f = curFlow(); if (!f || !S.sel.size) return;
+  const ids = new Set(S.sel); clip = {from:f.id, nodes:clone(f.nodes.filter(n => ids.has(n.id))), edges:clone(f.edges.filter(e => ids.has(e.from) && ids.has(e.to)))};
+  lsSet('pb-clip', JSON.stringify(clip)); toast(`Copied ${clip.nodes.length} node${clip.nodes.length > 1 ? 's' : ''}`);
+}
+function pasteClip(c, offset) {
+  const f = curFlow(); if (!f || !S.canWrite) return;
+  if (!c) { try { c = JSON.parse(lsGet('pb-clip') || 'null'); } catch {} }
+  if (!c || !c.nodes?.length) { toast('Nothing copied yet'); return; }
+  beginChange(f.id);
+  const map = {}; let dx = 40, dy = 40;
+  if (!offset && c.from !== f.id) { const [cx, cy] = viewCenter(); const minX = Math.min(...c.nodes.map(n => n.x)), minY = Math.min(...c.nodes.map(n => n.y)); dx = cx - minX - NODE_W / 2; dy = cy - minY - 60; }
+  const added = c.nodes.map(n => { const id = uid(f.id.slice(0, 12)); map[n.id] = id; return Object.assign(clone(n), {id, x:snapG(n.x + dx), y:snapG(n.y + dy), editedAt:nowISO()}); });
+  f.nodes.push(...added);
+  for (const e of c.edges) f.edges.push(Object.assign(clone(e), {id:`${map[e.from]}>${map[e.to]}`, from:map[e.from], to:map[e.to]}));
+  touchFlow(f.id); renderFlow(); renderLegend(); S.sel = new Set(added.map(n => n.id)); S.editing = null; refreshSel(); renderInspector();
+  toast(`Pasted ${added.length} node${added.length > 1 ? 's' : ''}`, 'Undo', undo);
+}
+function duplicateSel() { const f = curFlow(); if (!f || !S.sel.size) return; const ids = new Set(S.sel); pasteClip({from:f.id, nodes:f.nodes.filter(n => ids.has(n.id)), edges:f.edges.filter(e => ids.has(e.from) && ids.has(e.to))}, true); }
+function alignSel(axis) {
+  const f = curFlow(); const ns = f.nodes.filter(n => S.sel.has(n.id)); if (ns.length < 2) return; beginChange(f.id);
+  if (axis === 'row') { const y = Math.min(...ns.map(n => n.y)); ns.sort((a, b) => a.x - b.x); ns.forEach((n, i) => { n.y = y; if (i) n.x = Math.max(n.x, ns[i - 1].x + COLW); }); }
+  else { const x = Math.min(...ns.map(n => n.x)); ns.sort((a, b) => a.y - b.y); ns.forEach((n, i) => { n.x = x; if (i) n.y = Math.max(n.y, ns[i - 1].y + sizeOf(ns[i - 1]).h + 40); }); }
+  touchFlow(f.id); renderFlow();
+}
+
+/* ---------- inspector ---------- */
+function closeInspector() { insp.hidden = true; insp.innerHTML = ''; }
+function renderInspector() {
+  if (S.view !== 'flow') { closeInspector(); return; }
+  const f = curFlow(); if (!f) { closeInspector(); return; }
+  let h = '';
+  if (S.selEdge) { const e = f.edges.find(x => x.id === S.selEdge); if (!e) { closeInspector(); return; } h = edgePanel(f, e); }
+  else if (S.sel.size === 1) { const n = nodeById(f, [...S.sel][0]); if (!n) { closeInspector(); return; } if (n.part && S.editing === n.id) S.editing = null; h = S.editing === n.id && S.canWrite ? nodeForm(f, n) : nodeView(f, n); }
+  else if (S.sel.size > 1) h = multiPanel(f);
+  else { closeInspector(); return; }
+  const opening = insp.hidden;
+  insp.innerHTML = h; insp.hidden = false;
+  if (opening && S.sel.size === 1) keepInView(nodeById(f, [...S.sel][0]));
+  if (S.editing) bindNodeForm();
+  requestAnimationFrame(drawMini);
+}
+const pathBtns = p => (S.mode === 'live' ? `<button type="button" class="ibtn sm" data-act="open-path" data-path="${esc(p)}" title="${isFile(p) ? 'Show in File Explorer' : 'Open in File Explorer'}" aria-label="Open in File Explorer">${ic('folderOpen',14)}</button>` : '') + `<button type="button" class="ibtn sm" data-act="copy" data-text="${esc(p)}" title="Copy path" aria-label="Copy path">${ic('copy',14)}</button><a class="ibtn sm" href="${esc(vsc(p))}" title="Open in VS Code" aria-label="Open in VS Code">${ic('ext',14)}</a>`;
+function folderRow(ref, removable) {
+  const fo = folderOf(ref); if (!fo) return '';
+  const p = fo.path || '(path not set)';
+  return `<div class="frow"><div class="fmeta">${ic(isFile(fo.path) ? 'article' : 'folder',14)}<b>${esc(fo.label)}</b>${fo.kind ? `<span class="kindtag">${esc(fo.kind)}</span>` : ''}<span class="sp"></span>${removable ? `<button type="button" class="ibtn sm" data-act="nf-unfolder" data-ref="${esc(typeof ref === 'string' ? ref : fo.path)}" aria-label="Remove folder">${ic('close',13)}</button>` : ''}</div><div class="fpath"><code title="${esc(p)}">${esc(p)}</code>${fo.path ? pathBtns(fo.path) : ''}</div></div>`;
+}
+function acctInline(n) {
+  if (n.kind !== 'account' || !n.account) return '';
+  const a = S.accounts[n.account]; if (!a) return `<div class="acct-inline">Account not found: <code>${esc(n.account)}</code></div>`;
+  return `<div class="acct-inline"><div class="ap">${esc(a.platform)}</div><div class="ah">${esc(a.handle || a.label)}</div>${a.purpose ? `<p style="margin:6px 0 0">${esc(a.purpose)}</p>` : ''}${a.pacing ? `<div class="arow" style="margin-top:6px">${ic('clock',13)}<span>${esc(a.pacing)}</span></div>` : ''}<div style="margin-top:8px"><a class="btn sm" href="#accounts" data-act="acct-open" data-id="${esc(a.id)}">${ic('users',13)}Open in Accounts</a></div></div>`;
+}
+function nodeView(f, raw) {
+  const n = view(raw); const part = raw.part ? S.parts[raw.part] : null;
+  const k = KINDS[n.kind];
+  const inc = f.edges.filter(e => e.to === n.id), out = f.edges.filter(e => e.from === n.id);
+  const conn = (list, dir) => list.map(e => { const o = view(nodeById(f, dir === 'in' ? e.from : e.to)); return o ? `<button class="chip k-${o.kind}" data-act="focus" data-id="${esc(o.id)}">${ic(KINDS[o.kind].icon,12)}${esc(o.title)}${e.label ? ` <em>${esc(e.label)}</em>` : ''}</button>` : ''; }).join('');
+  const uses = raw.part ? partUse(raw.part).length : 0;
+  const partNote = !raw.part ? '' : `<div class="partnote">${ic('library',13)}<span>${part ? `From the part <b>${esc(part.title)}</b>${uses > 1 ? `, used by ${uses} steps` : ''}. Its text is edited in one place.` : `The part <code>${esc(raw.part)}</code> is missing.`}</span>${S.canWrite ? `<span class="pacts">${part ? `<button class="btn ghost sm" data-act="part-edit" data-id="${esc(raw.part)}">${ic('pencil',12)}Edit part</button>` : ''}<button class="btn ghost sm" data-act="detach" title="Copy the text into this step and stop following the part">Detach</button></span>` : ''}</div>`;
+  const prov = n.origin || n.src?.length ? `<details class="prov"><summary>Where this came from</summary>${n.origin ? `<div class="porigin">${esc(n.origin)}</div>` : ''}${n.src?.length ? `<div class="srcs">${n.src.map(s => `<code>${esc(s)}</code>`).join('')}</div>` : ''}</details>` : '';
+  const gname = n.goto ? (S.flows[n.goto]?.name || (n.goto === 'map' ? 'Overview' : n.goto)) : '';
+  return `<div class="ihd k-${n.kind}"><span class="ic">${ic(k.icon,16)}</span><span class="kl">${k.label}</span><span class="sp"></span>${S.canWrite && !raw.part ? `<button class="ibtn" data-act="edit" title="Edit (Enter)" aria-label="Edit">${ic('pencil')}</button>` : ''}<button class="ibtn" data-act="close-insp" aria-label="Close">${ic('close')}</button></div>
+<div class="ibody k-${n.kind}"><h2>${esc(n.title)}</h2>${n.sub ? `<p class="isub">${esc(n.sub)}</p>` : ''}${partNote}${acctInline(n)}
+${n.body ? `<div class="prose">${md(n.body)}</div>` : ''}
+${n.checks?.length ? `<h3>Checklist</h3><ul class="checks">${n.checks.map(c => `<li>${ic('ok',14)}<span>${inline(c)}</span></li>`).join('')}</ul>` : ''}
+${n.folders?.length ? `<h3>Folders</h3>${n.folders.map(r => folderRow(r)).join('')}` : ''}
+${n.links?.length ? `<h3>Links</h3><div class="links">${n.links.map(l => `<a href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener">${ic('ext',13)}${esc(l.label || l.url)}</a>`).join('')}</div>` : ''}
+${n.kind === 'goto' && n.goto ? `<div style="margin-top:16px"><button class="btn primary wide" data-act="goto" data-flow="${esc(n.goto)}">${ic('arrowR')}Open ${esc(gname)}</button></div>` : ''}
+${inc.length || out.length ? `<h3>Connections</h3>${inc.length ? `<div class="conn"><span>Comes from</span>${conn(inc, 'in')}</div>` : ''}${out.length ? `<div class="conn"><span>Leads to</span>${conn(out, 'out')}</div>` : ''}` : ''}
+${prov}
+${n.editedAt ? `<p class="edited">${ic('pencil',12)}Edited by you, ${esc(fmtDate(n.editedAt))}</p>` : ''}</div>
+${S.canWrite ? `<div class="ifoot"><button class="btn sm" data-act="dup">${ic('dup',14)}Duplicate</button><button class="btn sm" data-act="swap">${ic('swap',14)}Swap part</button><button class="btn sm" data-act="save-part">${ic('bookmark',14)}Save as part</button><span class="sp"></span><button class="btn sm danger" data-act="del">${ic('trash',14)}Delete</button></div>` : ''}`;
+}
+function opts(list, val) { return list.map(o => { const v = typeof o === 'string' ? o : o.v, l = typeof o === 'string' ? o : o.l; return `<option value="${esc(v)}"${v === val ? ' selected' : ''}>${esc(l)}</option>`; }).join(''); }
+function nodeForm(f, n) {
+  S.editFolders = (n.folders || []).slice();
+  const flowOpts = [{v:'', l:'Choose a flow'}, {v:'map', l:'Overview'}, ...flowsSorted().filter(x => x.id !== f.id).map(x => ({v:x.id, l:`${x.name} (${x.group})`}))];
+  const acctOpts = [{v:'', l:'Choose an account'}, ...Object.values(S.accounts).sort((a, b) => (a.platform + a.handle).localeCompare(b.platform + b.handle)).map(a => ({v:a.id, l:`${a.platform}: ${a.handle || a.label}`}))];
+  const folderOpts = [{v:'', l:'Add a shared folder…'}, ...Object.values(S.folders).sort((a, b) => a.label.localeCompare(b.label)).map(x => ({v:x.id, l:x.label}))];
+  return `<div class="ihd k-${esc(n.kind)}"><span class="ic">${ic((KINDS[n.kind] || KINDS.step).icon,16)}</span><span class="kl">Editing</span><span class="sp"></span><button class="ibtn" data-act="cancel-edit" aria-label="Cancel">${ic('close')}</button></div>
+<form class="ibody" id="nodeForm" autocomplete="off">
+<div class="row2"><div class="fx"><label for="nf_kind">Type</label><select id="nf_kind">${opts(KIND_ORDER.map(k => ({v:k, l:KINDS[k].label})), n.kind)}</select></div>
+<div class="fx" id="nf_gotoBox"${n.kind === 'goto' ? '' : ' hidden'}><label for="nf_goto">Opens flow</label><select id="nf_goto">${opts(flowOpts, n.goto || '')}</select></div>
+<div class="fx" id="nf_acctBox"${n.kind === 'account' ? '' : ' hidden'}><label for="nf_account">Account</label><select id="nf_account">${opts(acctOpts, n.account || '')}</select></div></div>
+<div class="fx"><label for="nf_title">Title</label><input type="text" id="nf_title" value="${esc(n.title)}" maxlength="80"></div>
+<div class="fx"><label for="nf_sub">One-line summary</label><input type="text" id="nf_sub" value="${esc(n.sub || '')}" maxlength="120"></div>
+<div class="fx"><label for="nf_body">Details</label><textarea id="nf_body" rows="9" maxlength="1200">${esc(n.body || '')}</textarea><span class="help">Start a line with “- ” for a bullet. **Bold** works.</span></div>
+<div class="fx"><label for="nf_checks">Checklist</label><textarea id="nf_checks" rows="4">${esc((n.checks || []).join('\n'))}</textarea><span class="help">One item per line.</span></div>
+<div class="fx"><span class="lbl">Folders</span><div id="nf_folders">${S.editFolders.map(r => folderRow(r, true)).join('') || '<span class="help">None yet.</span>'}</div>
+<div class="fadd"><select id="nf_folderPick" aria-label="Add a shared folder">${opts(folderOpts, '')}</select></div>
+<div class="fadd"><input type="text" id="nf_newPath" placeholder="Or paste a new folder path" aria-label="New folder path"><button type="button" class="btn sm" data-act="nf-newfolder" style="flex:0 0 auto">${ic('plus',13)}Add</button></div><span class="help">Folders are shared: one folder can be used by many steps and flows.</span></div>
+<div class="fx"><label for="nf_links">Links</label><textarea id="nf_links" class="mono" rows="3" placeholder="Label | https://…">${esc((n.links || []).map(l => `${l.label || ''} | ${l.url}`).join('\n'))}</textarea></div>
+<div class="fx"><label for="nf_src">Sources</label><textarea id="nf_src" class="mono" rows="2">${esc((n.src || []).join('\n'))}</textarea></div>
+<div class="mact"><button type="button" class="btn danger" data-act="del">${ic('trash',14)}Delete</button><span class="sp"></span><button type="button" class="btn" data-act="cancel-edit">Cancel</button><button type="submit" class="btn primary">${ic('ok',14)}Save</button></div>
+</form>`;
+}
+function bindNodeForm() {
+  const F = $('#nodeForm'); if (!F) return;
+  F.addEventListener('submit', ev => { ev.preventDefault(); saveNodeForm(); });
+  $('#nf_kind').addEventListener('change', e => { $('#nf_gotoBox').hidden = e.target.value !== 'goto'; $('#nf_acctBox').hidden = e.target.value !== 'account'; });
+  $('#nf_folderPick').addEventListener('change', e => { const v = e.target.value; if (v && !S.editFolders.includes(v)) { S.editFolders.push(v); redrawFolders(); } e.target.value = ''; });
+  F.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveNodeForm(); } });
+}
+function redrawFolders() { $('#nf_folders').innerHTML = S.editFolders.map(r => folderRow(r, true)).join('') || '<span class="help">None yet.</span>'; }
+function addPathFolder(path, label) {
+  path = String(path || '').trim(); if (!path) return null;
+  const hit = Object.values(S.folders).find(x => (x.path || '').toLowerCase() === path.toLowerCase()); if (hit) return hit.id;
+  const base = label || path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || 'Folder';
+  const id = uniqueId(slug(base), S.folders); saveDoc('folders', id, {label:base, path, kind:'other', note:''}); return id;
+}
+function saveNodeForm() {
+  const f = curFlow(); const n = nodeById(f, S.editing); if (!n) return;
+  const kind = $('#nf_kind').value;
+  if (kind === 'goto' && !$('#nf_goto').value) { toast('Choose the flow this opens.'); $('#nf_goto').focus(); return; }
+  if (kind === 'account' && !$('#nf_account').value) { toast('Choose the account.'); $('#nf_account').focus(); return; }
+  beginChange(f.id);
+  n.kind = kind; n.title = $('#nf_title').value.replace(/\s+/g, ' ').trim() || 'Untitled'; n.sub = $('#nf_sub').value.replace(/\s+/g, ' ').trim();
+  n.body = $('#nf_body').value.replace(/\r/g, '').replace(/\t/g, '  ').replace(/\s+$/, '');
+  n.checks = lines($('#nf_checks').value); n.folders = S.editFolders.slice(); n.src = lines($('#nf_src').value);
+  n.links = lines($('#nf_links').value).map(l => { const i = l.lastIndexOf('|'); const label = i >= 0 ? l.slice(0, i).trim() : ''; const url = (i >= 0 ? l.slice(i + 1) : l).trim(); return /^https?:\/\//i.test(url) ? {label:label || url, url} : null; }).filter(Boolean);
+  if (n.kind === 'goto') n.goto = $('#nf_goto').value; else delete n.goto;
+  if (n.kind === 'account') n.account = $('#nf_account').value; else delete n.account;
+  n.editedAt = nowISO(); S.editing = null;
+  touchFlow(f.id); renderFlow(); renderLegend(); renderInspector(); toast('Saved');
+}
+function edgePanel(f, e) {
+  const a = view(nodeById(f, e.from)), b = view(nodeById(f, e.to));
+  return `<div class="ihd"><span class="ic" style="--kc:var(--accent)">${ic('link',16)}</span><span class="kl" style="color:var(--accent)">Connection</span><span class="sp"></span><button class="ibtn" data-act="close-insp" aria-label="Close">${ic('close')}</button></div>
+<form class="ibody" id="edgeForm"><div class="conn"><span>From</span><button type="button" class="chip k-${a.kind}" data-act="focus" data-id="${esc(a.id)}">${ic(KINDS[a.kind].icon,12)}${esc(a.title)}</button></div><div class="conn"><span>To</span><button type="button" class="chip k-${b.kind}" data-act="focus" data-id="${esc(b.id)}">${ic(KINDS[b.kind].icon,12)}${esc(b.title)}</button></div>
+${S.canWrite ? `<div class="fx" style="margin-top:14px"><label for="ef_label">Label</label><input type="text" id="ef_label" value="${esc(e.label || '')}" maxlength="24" placeholder="yes, no, video…"></div>
+<div class="fx"><label for="ef_type">Style</label><select id="ef_type">${opts([{v:'flow', l:'Main path (solid arrow)'}, {v:'attach', l:'Attached note (dashed)'}], e.type)}</select></div>
+<div class="mact"><button type="button" class="btn danger" data-act="del">${ic('trash',14)}Delete</button><button type="button" class="btn" data-act="edge-reverse">Reverse</button><span class="sp"></span><button type="submit" class="btn primary">${ic('ok',14)}Save</button></div>` : ''}</form>`;
+}
+function multiPanel(f) {
+  const ns = f.nodes.filter(n => S.sel.has(n.id)).map(view);
+  return `<div class="ihd"><span class="ic" style="--kc:var(--accent)">${ic('layers',16)}</span><span class="kl" style="color:var(--accent)">${ns.length} selected</span><span class="sp"></span><button class="ibtn" data-act="close-insp" aria-label="Close">${ic('close')}</button></div>
+<div class="ibody"><div class="chips">${ns.map(n => `<button class="chip k-${n.kind}" data-act="focus" data-id="${esc(n.id)}">${ic(KINDS[n.kind].icon,12)}${esc(n.title)}</button>`).join('')}</div>
+<p class="help" style="color:var(--muted);font-size:12.5px;margin-top:14px">Copy them here and paste into any flow with Ctrl+V. Shift-drag on the board to select a group.</p></div>
+${S.canWrite ? `<div class="ifoot"><button class="btn sm" data-act="copy-sel">${ic('copy',14)}Copy</button><button class="btn sm" data-act="dup">${ic('dup',14)}Duplicate</button><button class="btn sm" data-act="align-row">Line up in a row</button><button class="btn sm" data-act="align-col">Stack</button><span class="sp"></span><button class="btn sm danger" data-act="del">${ic('trash',14)}Delete</button></div>` : ''}`;
+}
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'edgeForm') return; e.preventDefault();
+  const f = curFlow(); const ed = f.edges.find(x => x.id === S.selEdge); if (!ed) return;
+  beginChange(f.id); ed.label = $('#ef_label').value.trim(); ed.type = $('#ef_type').value; touchFlow(f.id); drawWires(); toast('Saved');
+});
+
+/* ---------- menus, modals, toast ---------- */
+const menu = $('#menu');
+function openMenuAt(x, y, html) {
+  menu.innerHTML = html; menu.hidden = false;
+  const r = menu.getBoundingClientRect(); const W = innerWidth, H = innerHeight;
+  menu.style.left = Math.max(8, Math.min(x, W - r.width - 8)) + 'px'; menu.style.top = Math.max(8, Math.min(y, H - r.height - 8)) + 'px';
+  const first = menu.querySelector('button'); if (first) first.focus();
+}
+function closeMenu() { menu.hidden = true; menu.innerHTML = ''; menuCb = null; }
+let menuCb = null;
+function kindMenu(x, y, cb) {
+  menuCb = cb;
+  openMenuAt(x, y, KIND_ORDER.filter(k => k !== 'start' || !curFlow()?.nodes.some(n => kindOf(n) === 'start')).map(k => `<button class="k-${k}" data-act="menu-kind" data-kind="${k}" role="menuitem"><span class="ic">${ic(KINDS[k].icon,14)}</span><span><b>${KINDS[k].label}</b><small>${KINDS[k].d}</small></span></button>`).join('') + (Object.keys(S.parts).length ? `<hr><button data-act="menu-part" role="menuitem"><span class="ic">${ic('library',14)}</span><span><b>From the parts library</b><small>${Object.keys(S.parts).length} saved parts</small></span></button>` : ''));
+}
+document.addEventListener('pointerdown', e => { if (!menu.hidden && !menu.contains(e.target) && !e.target.closest('[data-act=add-menu],[data-act=flow-accounts]')) closeMenu(); }, true);
+/* arrow keys move through a menu */
+menu.addEventListener('keydown', e => {
+  if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+  const items = $$('button', menu); if (!items.length) return;
+  e.preventDefault(); let i = items.indexOf(document.activeElement);
+  i = e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : (i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+  items[i].focus();
+});
+const modal = $('#modal'), mbody = $('#modalBody');
+let modalKeep = null, modalSeq = 0, modalReturn = null;
+function openModal(html, bind) {
+  if (modal.hidden) modalReturn = document.activeElement;   // where focus goes back to when the modal closes
+  modalSeq++; mbody.innerHTML = html; modal.hidden = false;
+  const h = mbody.querySelector('h2'); if (h) h.id = 'modalTitle';
+  if (bind) bind(mbody);
+  const f = mbody.querySelector('input:not([type=radio]),textarea,select,button.primary') || mbody.querySelector('button'); if (f) f.focus();
+}
+function closeModal() {
+  modal.hidden = true; mbody.innerHTML = ''; modalSeq++;
+  if (modalKeep) { const k = modalKeep; modalKeep = null; k(false); }
+  const r = modalReturn; modalReturn = null;
+  if (r && r.isConnected && typeof r.focus === 'function') r.focus({preventScroll:true});
+}
+modal.addEventListener('pointerdown', e => { if (e.target === modal) closeModal(); });
+/* Tab stays inside an open modal */
+modal.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const items = $$('button:not([disabled]),input:not([disabled]):not([type=radio]),input[type=radio]:checked,select,textarea,a[href]', mbody);
+  if (!items.length) return;
+  const first = items[0], last = items[items.length - 1];
+  if (e.shiftKey && (document.activeElement === first || !mbody.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && (document.activeElement === last || !mbody.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+});
+function field(fd) {
+  const id = 'f_' + fd.id; const help = fd.help ? `<span class="help">${esc(fd.help)}</span>` : '';
+  if (fd.type === 'textarea') return `<div class="fx"><label for="${id}">${esc(fd.label)}</label><textarea id="${id}" rows="${fd.rows || 3}"${fd.mono ? ' class="mono"' : ''} placeholder="${esc(fd.ph || '')}">${esc(fd.value || '')}</textarea>${help}</div>`;
+  if (fd.type === 'select') return `<div class="fx"><label for="${id}">${esc(fd.label)}</label><select id="${id}">${opts(fd.options, fd.value || '')}</select>${help}</div>`;
+  if (fd.type === 'icons') return `<div class="fx"><span class="lbl">${esc(fd.label)}</span><div class="icongrid" role="radiogroup" aria-label="${esc(fd.label)}">${FLOW_ICONS.map(k => `<label title="${k}"><input type="radio" name="${id}" value="${k}"${k === fd.value ? ' checked' : ''}><span>${ic(k,16)}</span></label>`).join('')}</div></div>`;
+  if (fd.type === 'datalist') return `<div class="fx"><label for="${id}">${esc(fd.label)}</label><input type="text" id="${id}" list="${id}_dl" value="${esc(fd.value || '')}"><datalist id="${id}_dl">${fd.options.map(o => `<option value="${esc(o)}">`).join('')}</datalist>${help}</div>`;
+  return `<div class="fx"><label for="${id}">${esc(fd.label)}</label><input type="text" id="${id}" value="${esc(fd.value || '')}" placeholder="${esc(fd.ph || '')}"${fd.req ? ' required' : ''}>${help}</div>`;
+}
+function formModal({title, intro, fields, submit = 'Save', onSubmit}) {
+  const rows = fields.map(fd => Array.isArray(fd) ? `<div class="row2">${fd.map(field).join('')}</div>` : field(fd)).join('');
+  openModal(`<form id="mform"><h2>${esc(title)}</h2>${intro ? `<p>${esc(intro)}</p>` : ''}${rows}<div class="mact"><span class="sp"></span><button type="button" class="btn" data-act="modal-close">Cancel</button><button class="btn primary" type="submit">${esc(submit)}</button></div></form>`, b => {
+    const okBtn = b.querySelector('button[type=submit]'); let busy = false;
+    b.querySelector('#mform').addEventListener('submit', ev => {
+      ev.preventDefault(); if (busy) return; const v = {};
+      for (const fd of fields.flat()) { if (fd.type === 'icons') { const c = b.querySelector(`input[name=f_${fd.id}]:checked`); v[fd.id] = c ? c.value : fd.value; } else { const el = b.querySelector('#f_' + fd.id); if (el) v[fd.id] = el.value; } }
+      const r = onSubmit(v), seq = modalSeq;
+      if (r === false) return;
+      if (r && typeof r.then === 'function') {
+        // a save that goes to the server: the form waits for it, and stays open with what was typed if it fails
+        busy = true; okBtn.disabled = true;
+        r.catch(() => false).then(ok => { busy = false; okBtn.disabled = false; if (ok !== false && seq === modalSeq) { modalKeep = null; closeModal(); } });
+        return;
+      }
+      modalKeep = null; closeModal();
+    });
+  });
+}
+function confirmBox(text, ok = 'Delete', danger = true) {
+  return new Promise(res => {
+    modalKeep = res;
+    openModal(`<h2>${esc(text)}</h2><div class="mact"><span class="sp"></span><button class="btn" data-act="modal-close">Cancel</button><button class="btn ${danger ? 'danger' : 'primary'}" id="cOk">${esc(ok)}</button></div>`, b => { b.querySelector('#cOk').addEventListener('click', () => { modalKeep = null; closeModal(); res(true); }); });
+  });
+}
+const REASONS = ['Duplicate', 'Out of date', 'Wrong', 'Replaced by something better', 'No longer used'];
+function reasonBox(title, detail, ok = 'Delete') {
+  return new Promise(res => {
+    modalKeep = () => res(null);
+    openModal(`<form id="rform"><h2>${esc(title)}</h2>${detail ? `<p>${esc(detail)}</p>` : ''}<div class="fx"><label for="rWhy">Why? (required, kept in the history)</label><input type="text" id="rWhy" maxlength="500" placeholder="What was wrong with it, or who asked for it" autocomplete="off"></div><div class="chips rchips" aria-label="Common reasons">${REASONS.map(r => `<button type="button" class="chip" data-r="${esc(r)}">${esc(r)}</button>`).join('')}</div><div class="mact"><span class="sp"></span><button type="button" class="btn" data-act="modal-close">Cancel</button><button type="submit" class="btn danger" id="rOk" disabled>${esc(ok)}</button></div></form>`, b => {
+      const i = b.querySelector('#rWhy'), okb = b.querySelector('#rOk');
+      const upd = () => { okb.disabled = !i.value.trim(); };
+      i.addEventListener('input', upd);
+      b.querySelector('.rchips').addEventListener('click', e => { const c = e.target.closest('[data-r]'); if (!c) return; const v = i.value.trim(); i.value = v ? `${v}; ${c.dataset.r}` : c.dataset.r; upd(); i.focus(); });
+      b.querySelector('#rform').addEventListener('submit', e => { e.preventDefault(); const v = i.value.replace(/\s+/g, ' ').trim(); if (!v) { i.focus(); return; } modalKeep = null; closeModal(); res(v); });
+    });
+  });
+}
+let toastT = null;
+function toast(msg, action, fn) {
+  const t = $('#toast'); t.innerHTML = `<span>${esc(msg)}</span>${action ? `<button id="tAct">${esc(action)}</button>` : ''}`; t.hidden = false;
+  if (action) $('#tAct').onclick = () => { t.hidden = true; fn(); };
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, action ? 6000 : 2200);
+}
+function copyText(text) {
+  const fallback = () => openModal(`<h2>Copy this path</h2><p>Press Ctrl+C, then paste it into File Explorer's address bar.</p><div class="fx"><input type="text" id="cpy" value="${esc(text)}" readonly></div><div class="mact"><span class="sp"></span><button class="btn primary" data-act="modal-close">Done</button></div>`, b => { const i = b.querySelector('#cpy'); setTimeout(() => { i.focus(); i.select(); }, 20); });
+  try { navigator.clipboard.writeText(text).then(() => toast('Path copied. Paste it into File Explorer.'), fallback); } catch { fallback(); }
+}
+
+/* ---------- pickers ---------- */
+function partPicker(title, onPick) {
+  const parts = Object.values(S.parts).sort((a, b) => (a.kind + a.title).localeCompare(b.kind + b.title));
+  const list = q => parts.filter(p => !q || (p.title + ' ' + (p.sub || '') + ' ' + (p.body || '')).toLowerCase().includes(q)).map(p => `<button type="button" class="k-${esc(p.kind)}" data-pid="${esc(p.id)}"><span class="ic">${ic(KINDS[p.kind]?.icon || 'k_step',14)}</span><span><b>${esc(p.title)}</b><small>${esc(p.sub || KINDS[p.kind]?.label || '')}</small></span></button>`).join('') || '<p class="empty">No parts match.</p>';
+  openModal(`<h2>${esc(title)}</h2><div class="fx"><input type="text" id="pq" placeholder="Search parts" aria-label="Search parts"></div><div class="plist" id="plist">${list('')}</div><div class="mact"><span class="sp"></span><button class="btn" data-act="modal-close">Cancel</button></div>`, b => {
+    b.querySelector('#pq').addEventListener('input', e => { b.querySelector('#plist').innerHTML = list(e.target.value.trim().toLowerCase()); });
+    b.querySelector('#plist').addEventListener('click', e => { const t = e.target.closest('[data-pid]'); if (!t) return; const p = S.parts[t.dataset.pid]; closeModal(); onPick(p); });
+  });
+}
+function flowPicker(title, onPick) {
+  const def = S.flowId || S.lastFlow;
+  formModal({title, fields:[{id:'flow', label:'Flow', type:'select', options:flowsSorted().map(f => ({v:f.id, l:`${f.name} (${f.group})`})), value:def}], submit:'Add', onSubmit:v => { onPick(v.flow); }});
+}
+
+function targetPicker(f, title, onPick) {
+  const options = [{v:'map', l:'Overview'}, ...flowsSorted().filter(x => x.id !== f.id).map(x => ({v:x.id, l:`${x.name} (${x.group})`}))];
+  formModal({title, fields:[{id:'flow', label:'Flow', type:'select', options, value:options[1] ? options[1].v : 'map'}], submit:'Add', onSubmit:v => { onPick(v.flow); }});
+}
+function accountPicker(title, onPick) {
+  const options = Object.values(S.accounts).sort((a, b) => (a.platform + a.handle).localeCompare(b.platform + b.handle)).map(a => ({v:a.id, l:`${a.platform}: ${a.handle || a.label}`}));
+  if (!options.length) { toast('Add an account first (Accounts, Add account).'); return; }
+  formModal({title, fields:[{id:'account', label:'Account', type:'select', options, value:options[0].v}], submit:'Add', onSubmit:v => { onPick(S.accounts[v.account]); }});
+}
+/* whoever owns most of the accounts is "the owner"; their name is not repeated on every card */
+function mainOwner() { const c = {}; let best = '', n = 0; for (const a of Object.values(S.accounts)) if (a.owner) { c[a.owner] = (c[a.owner] || 0) + 1; if (c[a.owner] > n) { n = c[a.owner]; best = a.owner; } } return best; }
+const withCurrent = (list, v) => v && !list.includes(v) ? [...list, v] : list;   // never let a select silently change a value it doesn't know
+
+/* ---------- flows: new, settings, duplicate ---------- */
+function flowForm(f, mode) {
+  formModal({
+    title: mode === 'new' ? 'New flow' : mode === 'dup' ? 'Duplicate flow' : 'Flow settings',
+    intro: mode === 'dup' ? 'Makes a full copy: every node, connection and folder link. Rename it for the new account or project.' : '',
+    fields:[{id:'name', label:'Name', value:mode === 'dup' ? `${f.name} (copy)` : (f?.name || ''), req:true},
+      [{id:'group', label:'Group', type:'select', options:withCurrent(GROUPS, f?.group), value:f?.group || 'Platforms'}, {id:'order', label:'Position in group', value:String(f?.order ?? ''), ph:'e.g. 5'}],
+      {id:'summary', label:'Summary', type:'textarea', rows:2, value:f?.summary || '', help:'One sentence: what this flow covers.'},
+      {id:'icon', label:'Icon', type:'icons', value:f?.icon || 'map'}],
+    submit: mode === 'new' ? 'Create flow' : mode === 'dup' ? 'Duplicate' : 'Save',
+    onSubmit:v => {
+      const name = v.name.trim(); if (!name) return false;
+      const order = v.order.trim() === '' ? (f?.order ?? 999) : Math.max(0, Math.min(999, Math.round(Number(v.order)) || 0));
+      if (mode === 'settings') { beginChange(f.id); Object.assign(f, {name, group:v.group.trim() || 'Platforms', summary:v.summary.trim(), icon:v.icon, order, editedAt:nowISO()}); touchFlow(f.id); renderBar(); renderRail(); toast('Saved'); return; }
+      const id = uniqueId(slug(name), S.flows);
+      const nf = mode === 'dup' ? Object.assign(clone(f), {id, name, group:v.group.trim() || f.group, summary:v.summary.trim(), icon:v.icon, order, editedAt:nowISO(), copiedFrom:f.id})
+        : {id, name, group:v.group.trim() || 'Platforms', summary:v.summary.trim(), icon:v.icon, order, editedAt:nowISO(), nodes:[{id:`${id}-start`, kind:'start', title:'Start', sub:'', body:'', x:0, y:0, editedAt:nowISO()}], edges:[]};
+      beginChange(id); S.flows[id] = normFlow(id, nf); touchFlow(id); go(id);
+      toast(mode === 'dup' ? 'Flow duplicated' : 'Flow created', 'Undo', undo);
+    }});
+}
+async function deleteFlow(f) {
+  const why = await reasonBox(`Delete the flow “${f.name}”?`, `Its ${f.nodes.length} nodes go with it. It moves to the skill's trash, and Undo brings it back.`);
+  if (!why || !S.flows[f.id]) return;
+  beginChange(f.id, why); addReason(f.id, why); delete S.flows[f.id]; touchFlow(f.id); go('home'); toast('Flow deleted', 'Undo', undo);
+}
+
+/* ---------- accounts / folders / parts forms ---------- */
+// a save refused because the document changed elsewhere keeps the form open with what was typed (the newer
+// version is loaded behind it); saving again replaces it, Cancel keeps it
+const keptInForm = () => toast('Your edits are still in the form: Save again to replace the newer version, or Cancel to keep it.');
+function accountForm(a, preset) {
+  const isNew = !a; a = a || Object.assign({platform:'X', status:'active', projects:[], notes:[]}, preset || {});
+  const flowOpts = [{v:'', l:'None'}, ...flowsSorted().map(f => ({v:f.id, l:f.name}))];
+  formModal({title:isNew ? 'Add account' : 'Edit account', intro:isNew ? 'Accounts show up on their platform flow and can be placed on any canvas. Never put passwords here.' : '',
+    fields:[[{id:'platform', label:'Platform', type:'select', options:withCurrent(PLATFORMS, isNew ? '' : a.platform), value:PLATFORMS.includes(a.platform) || !isNew ? a.platform : 'other'}, {id:'handle', label:'Handle', value:a.handle || '', ph:'@name'}],
+      [{id:'label', label:'Label', value:a.label || '', ph:'The main account'}, {id:'owner', label:'Owner', value:a.owner || mainOwner()}],
+      {id:'purpose', label:'What it is for', type:'textarea', rows:2, value:a.purpose || ''},
+      [{id:'status', label:'Status', type:'select', options:withCurrent(STATUSES, a.status), value:a.status || 'active'}, {id:'flow', label:'Platform flow', type:'select', options:flowOpts, value:a.flow || ''}],
+      {id:'pacing', label:'Pacing', value:a.pacing || '', ph:'e.g. 2-3 proactive replies a day'},
+      {id:'login', label:'How it signs in', value:a.login || '', help:'For example “Google sign-in” or “the owner logs in”. No passwords, codes or emails.'},
+      [{id:'url', label:'Profile link', value:a.url || '', ph:'https://'}, {id:'projects', label:'Projects (comma separated)', value:(a.projects || []).join(', ')}],
+      {id:'notes', label:'Notes', type:'textarea', rows:3, value:(a.notes || []).join('\n'), help:'One per line.'}],
+    submit:isNew ? 'Add account' : 'Save',
+    onSubmit:v => {
+      // start from the stored account so a field this form doesn't show (origin, anything added later) survives the save
+      const d = Object.assign({}, isNew ? {} : clone(S.accounts[a.id] || a), {platform:v.platform.trim() || 'other', handle:v.handle.trim(), label:v.label.trim(), owner:v.owner.trim(), purpose:v.purpose.trim(), status:v.status, flow:v.flow, pacing:v.pacing.trim(), login:v.login.trim(), url:v.url.trim(), projects:v.projects.split(',').map(s => s.trim()).filter(Boolean), notes:lines(v.notes), src:a.src || ['playbook'], editedAt:nowISO()});
+      delete d.id;
+      if (!d.handle && !d.label) { toast('Give it a handle or a label.'); return false; }
+      const id = isNew ? uniqueId(slug(`${d.platform}-${d.handle || d.label}`), S.accounts) : a.id;
+      return saveDocResult('accounts', id, d).then(r => { if (r === 'saved') { renderAfterDocChange(); toast(isNew ? 'Account added' : 'Saved'); } else if (r === 'stale') keptInForm(); return r === 'saved'; });
+    }});
+}
+function folderForm(fo) {
+  const isNew = !fo; fo = fo || {kind:'other'};
+  formModal({title:isNew ? 'Add shared folder' : 'Edit folder', intro:isNew ? 'Define a folder once, then attach it to any step in any flow.' : 'Changing the path updates every step that uses this folder.',
+    fields:[{id:'label', label:'Name', value:fo.label || '', ph:'Music library'}, {id:'path', label:'Path', value:fo.path || '', ph:'C:\\Users\\you\\Documents\\…'}, [{id:'kind', label:'Kind', type:'select', options:withCurrent(FOLDER_KINDS, fo.kind), value:fo.kind || 'other'}, {id:'note', label:'Note', value:fo.note || ''}]],
+    submit:isNew ? 'Add folder' : 'Save',
+    onSubmit:v => { if (!v.path.trim()) { toast('Add the folder path.'); return false; } const label = v.label.trim() || v.path.trim().split(/[\\/]/).pop(); const id = isNew ? uniqueId(slug(label), S.folders) : fo.id; const d = Object.assign({}, isNew ? {} : clone(S.folders[fo.id] || fo), {label, path:v.path.trim(), kind:v.kind, note:v.note.trim(), editedAt:nowISO()}); delete d.id; return saveDocResult('folders', id, d).then(r => { if (r === 'saved') { renderAfterDocChange(); toast(isNew ? 'Folder added' : 'Saved'); } else if (r === 'stale') keptInForm(); return r === 'saved'; }); }});
+}
+function partForm(p, fromNode) {
+  const isNew = !p; p = p || Object.assign({kind:'step'}, fromNode ? partToNode(fromNode) : {});
+  formModal({title:isNew ? 'Save as part' : 'Edit part', intro:isNew ? 'Parts are reusable steps. Drop them into any flow, or swap them in for an existing node.' : '',
+    fields:[[{id:'kind', label:'Type', type:'select', options:KIND_ORDER.map(k => ({v:k, l:KINDS[k].label})), value:p.kind}, {id:'title', label:'Title', value:p.title || ''}],
+      {id:'sub', label:'One-line summary', value:p.sub || ''}, {id:'body', label:'Details', type:'textarea', rows:6, value:p.body || ''}, {id:'checks', label:'Checklist', type:'textarea', rows:3, value:(p.checks || []).join('\n'), help:'One item per line.'}],
+    submit:isNew ? 'Save part' : 'Save',
+    onSubmit:v => {
+      if (!v.title.trim()) { toast('Give the part a title.'); return false; }
+      const id = isNew ? uniqueId('part-' + slug(v.title), S.parts) : p.id;
+      const d = Object.assign({}, isNew ? partToNode(p) : clone(S.parts[p.id] || p), {kind:v.kind, title:v.title.replace(/\s+/g, ' ').trim(), sub:v.sub.replace(/\s+/g, ' ').trim(), body:v.body.replace(/\r/g, '').replace(/\t/g, '  ').replace(/\s+$/, ''), checks:lines(v.checks), editedAt:nowISO()});
+      delete d.id; if (d.kind !== 'goto') delete d.goto; if (d.kind !== 'account') delete d.account;
+      for (const k of ['checks','links','folders','src']) if (Array.isArray(d[k]) && !d[k].length) delete d[k];
+      for (const k of ['sub','body']) if (d[k] === '') delete d[k];
+      const fromFlow = fromNode && S.flowId, nodeId = fromNode && fromNode.id;
+      return saveDocResult('parts', id, d).then(r => {
+        if (r === 'stale') keptInForm();
+        if (r !== 'saved') return false;
+        // "Save as part" turns the step into a reference, so the text lives in one place from now on
+        const f = fromFlow && S.flows[fromFlow]; const n = f && nodeById(f, nodeId);
+        if (n && !n.part) { beginChange(f.id); const keep = {id:n.id, part:id, x:n.x, y:n.y, editedAt:nowISO()}; if (n.origin) keep.origin = n.origin; for (const k of Object.keys(n)) delete n[k]; Object.assign(n, keep); touchFlow(f.id); }
+        renderAfterDocChange(); toast(isNew ? 'Saved to the parts library' : 'Saved');
+        return true;
+      });
+    }});
+}
+function renderAfterDocChange() { if (S.view === 'flow') { renderFlow(); renderInspector(); renderBar(); renderLegend(); } else renderPage(); renderRail(); }
+
+/* ---------- bar, rail ---------- */
+const menuBtn = () => `<button class="ibtn only-m" data-act="rail-open" aria-label="Open menu">${ic('menu')}</button>`;
+function renderBar() {
+  const bar = $('#bar');
+  if (S.view === 'flow') {
+    const f = curFlow();
+    if (!f) { bar.innerHTML = `${menuBtn()}<div class="crumb"><b class="vt">Loading…</b></div>`; return; }
+    const accts = Object.values(S.accounts).filter(a => a.flow === f.id);
+    bar.innerHTML = `${menuBtn()}<span class="ftile tone-${GROUP_TONE[f.group] || 'goto'}">${ic(f.icon,18)}</span><div class="crumb"><span class="grp">${esc(f.group)}</span><button class="fname" data-act="flow-settings" ${S.canWrite ? 'title="Rename, regroup or change the icon"' : 'disabled'}>${esc(f.name)}</button>${f.summary ? `<span class="fsum" title="${esc(f.summary)}">${esc(f.summary)}</span>` : ''}</div>
+<div class="tools">${accts.length || S.canWrite ? (al => `<button class="btn ghost hide-m" data-act="flow-accounts" title="${al}" aria-label="${al}">${ic('users',15)}${accts.length ? `${accts.length}<span class="lbl">&nbsp;account${accts.length > 1 ? 's' : ''}</span>` : '<span class="lbl">Accounts</span>'}</button>`)(accts.length ? `${accts.length} account${accts.length > 1 ? 's' : ''}` : 'Accounts') : ''}${S.canWrite ? `<span class="sepv hide-m"></span><button class="ibtn" data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo">${ic('undo')}</button><button class="ibtn hide-m hide-n" data-act="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">${ic('redo')}</button><button class="ibtn hide-m hide-n" data-act="flow-history" title="Versions of this flow" aria-label="Versions of this flow">${ic('clock')}</button><button class="ibtn hide-m hide-n" data-act="dup-flow" title="Duplicate this flow" aria-label="Duplicate this flow">${ic('dup')}</button><button class="ibtn hide-m hide-n" data-act="del-flow" title="Delete this flow" aria-label="Delete this flow">${ic('trash')}</button><button class="btn primary" data-act="add-menu">${ic('plus',15)}Add</button>` : ''}<button class="ibtn hide-m" data-act="shortcuts" title="Shortcuts" aria-label="Keyboard shortcuts">${ic('keyboard')}</button></div>`;
+    return;
+  }
+  const T = {home:['Overview', 'Everything at a glance'], accounts:['Accounts', 'Every account, by platform'], folders:['Shared folders', 'Folders and key files, defined once and used by any step'], parts:['Parts library', 'Reusable steps to drop into any flow'], history:['History', 'Everything posted, and every change to the playbook']}[S.view] || ['Loading…', ''];
+  const tools = !S.canWrite ? '' : S.view === 'accounts' ? `<button class="btn primary" data-act="acct-add">${ic('plus',15)}Add account</button>` : S.view === 'folders' ? `<button class="btn primary" data-act="folder-add">${ic('plus',15)}Add folder</button>` : S.view === 'parts' ? `<button class="btn primary" data-act="part-new">${ic('plus',15)}New part</button>` : S.view === 'home' ? `<button class="btn primary" data-act="flow-new">${ic('plus',15)}New flow</button>` : '';
+  bar.innerHTML = `${menuBtn()}<div class="crumb"><b class="vt">${T[0]}</b><span class="fsum">${T[1]}</span></div><div class="tools">${tools}</div>`;
+}
+function flowMatches(f, q) { if ((f.name + ' ' + f.group + ' ' + (f.summary || '')).toLowerCase().includes(q)) return true; return f.nodes.map(view).some(n => (n.title + ' ' + (n.sub || '') + ' ' + (n.body || '')).toLowerCase().includes(q)); }
+function renderRail() {
+  for (const a of $$('#tabs a')) a.classList.toggle('on', a.dataset.v === S.view);
+  const q = S.q.trim().toLowerCase(); const groups = {};
+  for (const f of flowsSorted()) { if (q && !flowMatches(f, q)) continue; (groups[f.group] ??= []).push(f); }
+  const order = [...GROUPS, ...Object.keys(groups).filter(g => !GROUPS.includes(g))];
+  $('#flowList').innerHTML = order.filter(g => groups[g]).map(g => `<div class="fgroup"><div class="gh tone-${GROUP_TONE[g] || 'goto'}"><span class="gdot"></span>${esc(g)}<span class="gc">${groups[g].length}</span></div>${groups[g].map(f => `<a class="fitem${S.view === 'flow' && S.flowId === f.id ? ' on' : ''}" href="#${esc(f.id)}">${ic(f.icon,15)}<span class="fn">${esc(f.name)}</span>${f.nodes.some(n => n.editedAt) || f.editedAt ? '<span class="edot" title="Has your edits"></span>' : ''}<span class="fc">${f.nodes.length}</span></a>`).join('')}</div>`).join('')
+    || `<p class="empty">${!S.ready ? 'Loading flows…' : q ? 'No flows match.' : S.mode === 'offline' ? 'The skill server is not running.' : 'No flows yet.'}</p>`;
+  renderResults();
+}
+function renderRailFoot() { $('#railFoot').innerHTML = S.canWrite ? `<button class="btn ghost wide" data-act="flow-new">${ic('plus',15)}New flow</button>` : ''; }
+function renderResults() {
+  const box = $('#results'); const q = S.q.trim().toLowerCase();
+  if (q.length < 2) { box.hidden = true; box.innerHTML = ''; return; }
+  const out = [];
+  for (const f of flowsSorted()) for (const n of f.nodes.map(view)) { if ((n.title + ' ' + (n.sub || '') + ' ' + (n.body || '') + ' ' + (n.checks || []).join(' ')).toLowerCase().includes(q)) out.push(`<button class="k-${n.kind}" data-act="res-node" data-flow="${esc(f.id)}" data-id="${esc(n.id)}"><span class="ic">${ic(KINDS[n.kind].icon,14)}</span><span><span class="rt">${esc(n.title)}</span><br><span class="rs">${esc(f.name)} · ${KINDS[n.kind].label}</span></span></button>`); if (out.length > 40) break; }
+  for (const a of Object.values(S.accounts)) if ((a.platform + ' ' + (a.handle || '') + ' ' + (a.label || '') + ' ' + (a.purpose || '')).toLowerCase().includes(q)) out.push(`<button class="k-account" data-act="res-acct" data-id="${esc(a.id)}"><span class="ic">${ic('k_account',14)}</span><span><span class="rt">${esc(a.handle || a.label)}</span><br><span class="rs">${esc(a.platform)} account</span></span></button>`);
+  for (const fo of Object.values(S.folders)) if ((fo.label + ' ' + fo.path).toLowerCase().includes(q)) out.push(`<button class="k-tool" data-act="res-folder" data-id="${esc(fo.id)}"><span class="ic">${ic('folder',14)}</span><span><span class="rt">${esc(fo.label)}</span><br><span class="rs">Folder</span></span></button>`);
+  box.innerHTML = out.slice(0, 60).join('') || '<p class="empty">Nothing matches.</p>'; box.hidden = false;
+}
+let qT = null;
+$('#q').addEventListener('input', e => { clearTimeout(qT); qT = setTimeout(() => { S.q = e.target.value; renderRail(); }, 120); });
+$('#q').addEventListener('keydown', e => { if (e.key === 'Escape') { e.target.value = ''; S.q = ''; renderRail(); e.target.blur(); } if (e.key === 'Enter') { const b = $('#results button'); if (b) b.click(); } });
+function openRail() { shell.classList.add('rail-open'); }
+function closeRail() { shell.classList.remove('rail-open'); }
+
+/* ---------- pages ---------- */
+function loadingHTML() { return `<div class="notice">${S.mode === 'offline' && S.bootError ? `<b>The skill server answered with an error.</b><br>${esc(S.bootError)}. See server.log in the skill's playbook folder.` : S.mode === 'offline' ? "<b>The skill server isn't running.</b><br>Open the <b>Agent Playbook</b> shortcut on the Desktop or in the Start menu; it starts the server and opens this page." : 'Loading the skill…'}</div>`; }
+/* redrawing a page keeps the field being typed in, caret and all (a poll can redraw the page mid-word) */
+function keepFocus(draw) {
+  const a = document.activeElement, id = a && a.id && page.contains(a) ? a.id : null;
+  let s = null, end = null; try { s = a.selectionStart; end = a.selectionEnd; } catch {}
+  draw();
+  const n = id && document.getElementById(id); if (!n || n === a) return;
+  n.focus({preventScroll:true}); try { if (s != null) n.setSelectionRange(s, end); } catch {}
+}
+function renderPage() {
+  if (S.view === 'flow') return;
+  if (!S.ready || S.mode === 'offline') { page.innerHTML = loadingHTML(); return; }
+  if (S.view === 'history') { pageHistory(); return; }
+  keepFocus(() => { page.innerHTML = ({home:pageHome, accounts:pageAccounts, folders:pageFolders, parts:pageParts}[S.view] || pageHome)(); });
+}
+
+/* ---------- history: posted content (audit log) and playbook changes ---------- */
+S.hf = {tab:'posted', platform:'', project:'', status:'', q:'', open:null};
+let auditCache = null;   // the posted items; poll() clears it when the log file changes
+let histSeq = 0, histShown = null;   // the newest call wins; which tab is on screen
+async function pageHistory() {
+  if (S.mode !== 'live') { page.innerHTML = `<div class="notice">History needs the skill server. Open the Agent Playbook shortcut.</div>`; return; }
+  const hf = S.hf, seq = ++histSeq;
+  const tabs = `<div class="toolbar"><div class="tabs" style="margin:0;min-width:240px"><a href="#history" data-act="hist-tab" data-tab="posted" class="${hf.tab === 'posted' ? 'on' : ''}">Posted content</a><a href="#history" data-act="hist-tab" data-tab="changes" class="${hf.tab === 'changes' ? 'on' : ''}">Playbook changes</a></div></div>`;
+  const live = () => seq === histSeq && S.view === 'history';
+  const show = h => { if (live()) { keepFocus(() => { page.innerHTML = h; }); histShown = hf.tab; } };
+  // "Loading" only while switching to a tab that has to be fetched; a redraw of the same tab keeps the list (and the scroll)
+  if (histShown !== hf.tab && (hf.tab === 'changes' || !auditCache)) { page.innerHTML = tabs + loadingHTML(); histShown = null; }
+  try {
+    if (hf.tab === 'changes') {
+      const {changes} = await api('GET', '/api/changes');
+      if (!live() || hf.tab !== 'changes') return;
+      show(tabs + `<div class="notice" style="margin-bottom:16px">Every change to a flow, account, folder or part, newest first. Each save keeps the version it replaced: open a flow's history to restore one.</div>` +
+        (changes.length ? `<div class="flist">${changes.map(c => `<div class="hrow"><span class="hat">${esc(fmtDate(c.at))}</span><span class="pill">${esc(c.removed?.length ? 'removed' : c.action)}</span><span class="hwho">${esc(c.by)}</span><span class="htitle">${esc(c.col)}: ${c.col === 'flows' && S.flows[c.id] ? `<a href="#${esc(c.id)}">${esc(c.title || c.id)}</a>` : esc(c.title || c.id)}</span>${COLS.includes(c.col) ? `<button class="btn ghost sm" data-act="versions" data-col="${esc(c.col)}" data-id="${esc(c.id)}">${ic('clock',13)}Versions</button>` : ''}${whyHTML(c)}</div>`).join('')}</div>` : '<p class="empty">No changes yet. Edits made on the canvas or with pb.py show up here.</p>'));
+      return;
+    }
+    if (!auditCache) { const got = await api('GET', '/api/audit'); auditCache = got.items; if (got.audit) S.auditStamp = got.audit; }
+    const items = auditCache;
+    if (!live() || hf.tab !== 'posted') return;
+    const uniq = k => [...new Set(items.map(i => i[k]).filter(Boolean))].sort();
+    const q = hf.q.trim().toLowerCase();
+    const rows = items.filter(i => (!hf.platform || i.platform === hf.platform) && (!hf.project || i.project === hf.project) && (!hf.status || i.status === hf.status) && (!q || JSON.stringify(i).toLowerCase().includes(q))).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+    const sel = (id, label, vals, v) => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${vals.map(x => `<option${x === v ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>`;
+    const count = k => { const c = {}; for (const i of rows) c[i[k] || '?'] = (c[i[k] || '?'] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1]); };
+    let h = tabs + `<div class="toolbar">${sel('hf_platform', 'All platforms', uniq('platform'), hf.platform)}${sel('hf_project', 'All projects', uniq('project'), hf.project)}${sel('hf_status', 'Any status', uniq('status'), hf.status)}<input type="text" id="hf_q" placeholder="Search the text" value="${esc(hf.q)}" aria-label="Search posted content"></div>`;
+    h += `<div class="stats" style="margin-top:0">${[['items', rows.length], ...count('platform').slice(0, 5)].map(([l, n]) => `<div class="stat"><b>${n}</b><span>${esc(l)}</span></div>`).join('')}</div>`;
+    if (!items.length) return void show(h + '<p class="empty">Nothing logged yet. Every post gets logged with <code>python playbook/audit.py add</code>.</p>');
+    if (!rows.length) return void show(h + '<p class="empty">Nothing matches those filters.</p>');
+    let day = null;
+    for (const i of rows.slice(0, 600)) {
+      const d = (i.at || '').slice(0, 10) || 'Undated';
+      if (d !== day) { h += `${day !== null ? '</div>' : ''}<h3 class="ph">${esc(d)}</h3><div class="flist">`; day = d; }
+      const open = hf.open === i.id; const txt = i.text || i.title || i.notes || '';
+      h += `<div class="post${open ? ' open' : ''}"><button class="phead" data-act="hist-open" data-id="${esc(i.id)}" aria-expanded="${open}"><span class="ftile tone-account" style="width:28px;height:28px">${ic(PLATFORM_ICON[i.platform] || 'users',14)}</span><span class="pmeta"><b>${esc(i.platform || '?')}</b> ${esc(i.action || '')}${i.account ? ` · ${esc(i.account)}` : ''}${i.project && i.project !== 'none' ? ` · ${esc(S.flows[i.project]?.name || i.project)}` : ''}<small>${esc(txt.replace(/\s+/g, ' ').slice(0, 160))}</small></span><span class="pill s-${i.status === 'live' ? 'active' : i.status === 'scheduled' ? 'replies-only' : i.status === 'deleted' || i.status === 'removed' || i.status === 'failed' ? 'skip' : 'paused'}">${esc(i.status || '')}</span></button>`;
+      if (open) {
+        h += `<div class="pbody">${i.text ? `<pre class="ptext">${esc(i.text)}</pre>` : '<p class="help">The full text was not recorded for this one.</p>'}<dl class="pdl">${[['When', i.at + (i.at_precision && i.at_precision !== 'exact' ? ` (${i.at_precision})` : '')], ['Link', i.url], ['Replying to / posted in', i.target], ['Title', i.title], ['Scheduled for', i.scheduled_for], ['Verified', i.verified], [`Why ${i.status}`, ['deleted', 'removed'].includes(i.status) ? (i.reason || 'Not recorded (logged before reasons were required)') : ''], ['Notes', i.notes], ['Logged from', i.source], ['Text from', i.text_source]].filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${/^https?:\/\//.test(v) ? `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>` : esc(v)}</dd>`).join('')}</dl>${(i.media || []).length ? `<div class="fpath" style="flex-wrap:wrap">${i.media.map(m => `<code title="${esc(m)}">${esc(m)}</code>${pathBtns(m)}`).join('')}</div>` : ''}${(i.history || []).length ? `<h3 style="font:600 10.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Updates</h3><ul class="anotes">${i.history.map(u => `<li>${esc(fmtDate(u.at))}: ${esc(Object.entries(u).filter(([k]) => !['kind','of','at'].includes(k)).map(([k, v]) => `${k} ${v}`).join(', '))}</li>`).join('')}</ul>` : ''}<p class="help" style="margin-top:10px">ID <code>${esc(i.id)}</code></p></div>`;
+      }
+      h += '</div>';
+    }
+    if (day !== null) h += '</div>';
+    if (rows.length > 600) h += `<p class="empty">Showing the newest 600 of ${rows.length}. Narrow it with the filters.</p>`;
+    show(h);
+  } catch { show(tabs + `<div class="notice">Couldn't load the history from the skill server.</div>`); }
+}
+function whyHTML(c) {
+  const gone = c.action === 'delete' || (c.removed || []).length;
+  if (!gone && !c.reason) return '';
+  return `<div class="hwhy">${(c.removed || []).length ? `Removed ${esc(c.removed.join(', '))}. ` : ''}<b>Why:</b> ${esc(c.reason || 'not recorded (before reasons were required)')}</div>`;
+}
+async function versionsModal(col, id) {
+  try {
+    const {versions} = await api('GET', `/api/versions/${col}/${encodeURIComponent(id)}`);
+    const name = col === 'flows' ? (S.flows[id]?.name || id) : id;
+    const when = v => v.replace(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d).*$/, '$1-$2-$3 $4:$5:$6');
+    openModal(`<h2>Versions of ${esc(name)}</h2><p>Each one is how it looked before a change (a deletion always keeps one). Restoring keeps the current version too, so you can always go back.</p>${versions.length ? `<div class="plist">${versions.map(v => `<button type="button" data-ver="${esc(v)}"><span class="ic" style="--kc:var(--accent)">${ic('clock',14)}</span><span><b>${esc(when(v))}</b><small>Restore this version</small></span></button>`).join('')}</div>` : '<p class="empty">No earlier versions yet.</p>'}<div class="mact"><span class="sp"></span><button class="btn" data-act="modal-close">Close</button></div>`, b => {
+      // listen on the list, which goes with this modal; the sheet itself outlives it and would collect a listener per opening
+      const list = b.querySelector('.plist'); if (!list) return;
+      list.addEventListener('click', async e => {
+        const t = e.target.closest('[data-ver]'); if (!t) return;
+        const label = when(t.dataset.ver);
+        try {
+          const {doc} = await api('GET', `/api/versions/${col}/${encodeURIComponent(id)}/${t.dataset.ver}`);
+          closeModal();
+          if (!await confirmBox(`Restore ${name} to ${label}?`, 'Restore', false)) return;
+          if (col === 'flows') { beginChange(id); addReason(id, `Restored the version from ${label}`); S.flows[id] = normFlow(id, doc); touchFlow(id); if (S.view === 'flow' && S.flowId === id) { renderFlow(); renderBar(); renderLegend(); closeInspector(); } }
+          else if (!await saveDoc(col, id, doc)) return;
+          renderRail(); if (S.view !== 'flow') renderPage(); toast('Restored', col === 'flows' ? 'Undo' : null, undo);
+        } catch { toast("Couldn't load that version."); }
+      });
+    });
+  } catch { toast("Couldn't load the versions."); }
+}
+function pageHome() {
+  const fl = flowsSorted(); const nodes = fl.flatMap(f => f.nodes.map(view));
+  const stat = (n, l) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`;
+  const edited = nodes.filter(n => n.editedAt).length;
+  let h = `<section class="hero"><h1>Agent Playbook</h1><p>This is the playbook your agent runs: every flow, rule, account and folder behind the work. Open a flow to read it. Anything you change saves straight into the skill, and the agent follows your version on the next run.</p>
+<div class="stats">${stat(fl.length, 'flows')}${stat(nodes.length, 'steps and notes')}${stat(nodes.filter(n => n.kind === 'rule' || n.kind === 'check').length, 'rules and QC checks')}${stat(Object.keys(S.accounts).length, 'accounts')}${stat(Object.keys(S.folders).length, 'shared folders')}${stat(edited, 'edited by you')}</div></section>`;
+  if (!fl.length) return h + `<div class="notice" style="margin-top:20px">No flows yet.${S.canWrite ? ' Use New flow to start one.' : ''}</div>`;
+  const groups = {}; for (const f of fl) (groups[f.group] ??= []).push(f);
+  for (const g of [...GROUPS, ...Object.keys(groups).filter(x => !GROUPS.includes(x))]) {
+    if (!groups[g]) continue;
+    h += `<section class="gsec tone-${GROUP_TONE[g] || 'goto'}"><h2><span class="gdot"></span>${esc(g)}<span class="gc">${groups[g].length}</span></h2><div class="tiles">${groups[g].map(tile).join('')}</div></section>`;
+  }
+  return h;
+}
+function tile(f) {
+  const counts = KIND_ORDER.map(k => [k, f.nodes.filter(n => kindOf(n) === k).length]).filter(([, c]) => c);
+  const fold = new Set(f.nodes.flatMap(n => n.folders || []).map(x => typeof x === 'string' ? x : x.path)).size;
+  const accts = Object.values(S.accounts).filter(a => a.flow === f.id).length;
+  const bits = [`${f.nodes.length} nodes`]; if (fold) bits.push(`${fold} folder${fold > 1 ? 's' : ''}`); if (accts) bits.push(`${accts} account${accts > 1 ? 's' : ''}`);
+  return `<a class="tile" href="#${esc(f.id)}"><div class="th"><span class="ftile tone-${GROUP_TONE[f.group] || 'goto'}">${ic(f.icon,18)}</span><b>${esc(f.name)}</b></div><p>${esc(f.summary || '')}</p><div class="kbar" aria-hidden="true">${counts.map(([k, c]) => `<i class="k-${k}" style="flex:${c}" title="${c} ${KINDS[k].label}"></i>`).join('')}</div><div class="tm">${bits.join(' · ')}${f.nodes.some(n => n.editedAt) ? ' · <span class="you">your edits</span>' : ''}</div></a>`;
+}
+function acctCard(a) {
+  const fl = a.flow && S.flows[a.flow];
+  return `<article class="acard ${esc(a.status || '')}"><header><span class="ftile tone-account">${ic(PLATFORM_ICON[a.platform] || 'users',16)}</span><div><div class="ap">${esc(a.platform)}${a.owner && a.owner !== mainOwner() ? ` · ${esc(a.owner)}` : ''}</div><div class="ah">${esc(a.handle || a.label)}</div></div><span class="pill s-${esc(a.status || '')}">${esc(a.status || '')}</span></header>
+${a.label && a.handle ? `<div class="al">${esc(a.label)}</div>` : ''}${a.purpose ? `<p>${esc(a.purpose)}</p>` : ''}
+${a.pacing ? `<div class="arow">${ic('clock',13)}<span>${esc(a.pacing)}</span></div>` : ''}${a.login ? `<div class="arow">${ic('lock',13)}<span>${esc(a.login)}</span></div>` : ''}
+${a.projects?.length ? `<div class="chips">${a.projects.map(p => S.flows[p] ? `<a class="chip" href="#${esc(p)}">${esc(S.flows[p].name)}</a>` : `<span class="chip">${esc(p)}</span>`).join('')}</div>` : ''}
+${a.notes?.length ? `<ul class="anotes">${a.notes.map(x => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}
+<footer>${a.url && safeUrl(a.url) !== '#' ? `<a class="btn ghost sm" href="${esc(a.url)}" target="_blank" rel="noopener">${ic('ext',13)}Profile</a>` : ''}${fl ? `<a class="btn ghost sm" href="#${esc(a.flow)}">${ic('flow',13)}${esc(fl.name)} flow</a>` : ''}${S.canWrite ? `<button class="btn ghost sm" data-act="acct-edit" data-id="${esc(a.id)}">${ic('pencil',13)}Edit</button><button class="btn ghost sm" data-act="acct-dup" data-id="${esc(a.id)}">${ic('dup',13)}Duplicate</button><button class="btn ghost sm" data-act="acct-place" data-id="${esc(a.id)}">${ic('k_account',13)}Place on canvas</button><span class="sp"></span><button class="btn ghost sm danger" data-act="acct-del" data-id="${esc(a.id)}" title="Delete account" aria-label="Delete account">${ic('trash',13)}</button>` : ''}</footer></article>`;
+}
+function pageAccounts() {
+  const all = Object.values(S.accounts); const af = S.af; const q = af.q.trim().toLowerCase();
+  const platforms = [...new Set(all.map(a => a.platform))].sort();
+  const list = all.filter(a => (!af.platform || a.platform === af.platform) && (!af.status || a.status === af.status) && (!q || JSON.stringify(a).toLowerCase().includes(q)));
+  let h = `<div class="toolbar"><select id="af_platform" aria-label="Platform"><option value="">All platforms (${all.length})</option>${platforms.map(p => `<option${p === af.platform ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select><select id="af_status" aria-label="Status"><option value="">Any status</option>${STATUSES.map(s => `<option${s === af.status ? ' selected' : ''}>${s}</option>`).join('')}</select><input type="text" id="af_q" placeholder="Filter accounts" value="${esc(af.q)}" aria-label="Filter accounts"></div>`;
+  if (!all.length) return h + `<div class="notice">No accounts yet.${S.canWrite ? ' Use Add account to start the list.' : ''}</div>`;
+  const by = {}; for (const a of list) (by[a.platform] ??= []).push(a);
+  for (const p of Object.keys(by).sort((a, b) => PLATFORMS.indexOf(a) - PLATFORMS.indexOf(b) || a.localeCompare(b))) {
+    h += `<h3 class="ph"><span class="ftile tone-account" style="width:26px;height:26px">${ic(PLATFORM_ICON[p] || 'users',14)}</span>${esc(p)}<span class="gc">${by[p].length}</span>${S.canWrite ? `<button class="btn ghost sm" data-act="acct-add-p" data-platform="${esc(p)}">${ic('plus',13)}Add</button>` : ''}</h3><div class="pgrid">${by[p].sort((a, b) => STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status)).map(acctCard).join('')}</div>`;
+  }
+  return h + (list.length ? '' : '<div class="notice">No accounts match those filters.</div>');
+}
+function pageFolders() {
+  const use = folderUse(); const all = Object.values(S.folders).sort((a, b) => FOLDER_KINDS.indexOf(a.kind) - FOLDER_KINDS.indexOf(b.kind) || a.label.localeCompare(b.label));
+  if (!all.length) return `<div class="notice">No shared folders yet.${S.canWrite ? ' Use Add folder, or add one from any step.' : ''}</div>`;
+  let h = '', last = null;
+  for (const fo of all) {
+    if (fo.kind !== last) { if (last !== null) h += '</div>'; h += `<h3 class="ph">${esc((fo.kind || 'other').replace(/^./, c => c.toUpperCase()))}<span class="gc">${all.filter(x => x.kind === fo.kind).length}</span></h3><div class="flist">`; last = fo.kind; }
+    const u = use[fo.id] || []; const flows = [...new Set(u.map(x => x.flow))];
+    h += `<div class="folder"><div class="fl"><b>${ic(isFile(fo.path) ? 'article' : 'folder',15)}${esc(fo.label)}</b>${fo.note ? `<small>${esc(fo.note)}</small>` : ''}</div><div class="fpath"><code title="${esc(fo.path)}">${esc(fo.path)}</code>${pathBtns(fo.path)}</div><div class="tools">${S.canWrite ? `<button class="btn ghost sm" data-act="folder-edit" data-id="${esc(fo.id)}">${ic('pencil',13)}Edit</button><button class="btn ghost sm danger" data-act="folder-del" data-id="${esc(fo.id)}" title="Delete folder" aria-label="Delete folder">${ic('trash',13)}</button>` : ''}</div>
+<div class="used">${flows.length ? `Used by ${u.length} step${u.length > 1 ? 's' : ''} in ${flows.map(fid => { const first = u.find(x => x.flow === fid); return `<button class="chip" data-act="res-node" data-flow="${esc(fid)}" data-id="${esc(first.node)}">${esc(S.flows[fid]?.name || fid)}</button>`; }).join('')}` : 'Not used by any step yet.'}</div></div>`;
+  }
+  return h + '</div>';
+}
+function pageParts() {
+  const all = Object.values(S.parts).sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.title.localeCompare(b.title));
+  const intro = `<div class="notice" style="margin-bottom:18px">Parts are ready-made steps. Add one to a flow, or open a node and choose <b>Swap part</b> to replace it while keeping its connections. Save any node as a part from its details panel.</div>`;
+  if (!all.length) return intro + '<p class="empty">No parts yet.</p>';
+  return intro + `<div class="pgrid">${all.map(p => `<article class="pcard k-${esc(p.kind)}"><div class="hd"><span class="ic">${ic(KINDS[p.kind]?.icon || 'k_step',16)}</span><div><div class="kl">${esc(KINDS[p.kind]?.label || p.kind)}</div><div class="t">${esc(p.title)}</div>${p.sub ? `<div class="s">${esc(p.sub)}</div>` : ''}</div></div>${p.body ? `<div class="bx">${inline(p.body.replace(/^\s*[-*] /gm, '• '))}</div>` : ''}<div class="used">${(u => u ? `Used by ${u} step${u > 1 ? 's' : ''}` : 'Not used by any step yet.')(partUse(p.id).length)}</div><footer>${S.canWrite ? `<button class="btn sm" data-act="part-add" data-id="${esc(p.id)}">${ic('plus',13)}Add to a flow</button><button class="btn ghost sm" data-act="part-edit" data-id="${esc(p.id)}">${ic('pencil',13)}Edit</button><span class="sp"></span><button class="btn ghost sm danger" data-act="part-del" data-id="${esc(p.id)}" aria-label="Delete part">${ic('trash',13)}</button>` : ''}</footer></article>`).join('')}</div>`;
+}
+page.addEventListener('change', e => {
+  if (e.target.id === 'af_platform') { S.af.platform = e.target.value; renderPage(); }
+  if (e.target.id === 'af_status') { S.af.status = e.target.value; renderPage(); }
+  const hk = {hf_platform:'platform', hf_project:'project', hf_status:'status'}[e.target.id];
+  if (hk) { S.hf[hk] = e.target.value; S.hf.open = null; pageHistory(); }
+});
+let pageQT = null;   // its own timer: the search box in the rail has another
+page.addEventListener('input', e => {   // the redraw keeps the field focused (keepFocus)
+  if (e.target.id === 'hf_q') { S.hf.q = e.target.value; clearTimeout(pageQT); pageQT = setTimeout(pageHistory, 250); return; }
+  if (e.target.id === 'af_q') { S.af.q = e.target.value; clearTimeout(pageQT); pageQT = setTimeout(renderPage, 200); } });
+
+/* ---------- actions ---------- */
+function placeAccount(a) {
+  const target = (S.view === 'flow' && S.flowId) || (a.flow && S.flows[a.flow] ? a.flow : null);
+  const put = fid => { go(fid); setTimeout(() => { const [x, y] = viewCenter(); const f = curFlow(); beginChange(f.id); const n = {id:uid(f.id.slice(0, 12)), kind:'account', account:a.id, title:a.handle || a.label, sub:`${a.platform} · ${a.status}`, body:a.purpose || '', x:snapG(x - NODE_W / 2), y:snapG(y - 50), editedAt:nowISO()}; f.nodes.push(n); touchFlow(f.id); renderFlow(); renderLegend(); selectOnly(n.id); toast('Account placed', 'Undo', undo); }, 60); };
+  if (target) put(target); else flowPicker('Place on which flow?', put);
+}
+const ACT = {
+  'rail-open':openRail, 'rail-close':closeRail, 'close-insp':clearSel, 'modal-close':closeModal,
+  'zoom-in':() => zoomCenter(1.2), 'zoom-out':() => zoomCenter(1 / 1.2), fit:fitKey, undo, redo,
+  'retry-now':() => { for (const id of dirty) retryAt[id] = 0; if (dirty.size) saveSoon(0); poll(); },
+  edit:() => { const n = nodeById(curFlow(), [...S.sel][0]); if (!n) return; if (n.part) { S.editing = null; renderInspector(); toast('This step comes from a part. Use Edit part, or Detach to change only this step.'); return; } S.editing = n.id; renderInspector(); setTimeout(() => $('#nf_title')?.focus(), 30); },
+  detach:() => { const f = curFlow(); const n = nodeById(f, [...S.sel][0]); if (!n || !n.part) return; beginChange(f.id); detachNode(n); touchFlow(f.id); renderFlow(); renderLegend(); renderInspector(); toast('Detached. This step has its own text now.', 'Undo', undo); },
+  'cancel-edit':() => { S.editing = null; renderInspector(); },
+  del:() => deleteSelection(), dup:() => duplicateSel(), 'copy-sel':() => copySel(),
+  'align-row':() => alignSel('row'), 'align-col':() => alignSel('col'),
+  focus:b => { const n = nodeById(curFlow(), b.dataset.id); if (n) { selectOnly(n.id); centerOn(n); } },
+  goto:b => followGoto(b.dataset.flow),
+  copy:b => copyText(b.dataset.text),
+  'open-path':b => openPath(b.dataset.path),
+  'hi-kind':b => { S.hiKind = S.hiKind === b.dataset.kind ? null : b.dataset.kind; renderLegend(); const f = curFlow(); for (const el of nodesEl.children) { const n = nodeById(f, el.dataset.id); el.classList.toggle('dim', !!S.hiKind && !!n && kindOf(n) !== S.hiKind); } styleWires(); drawMini(); },
+  'add-menu':b => { const r = b.getBoundingClientRect(); const [cx, cy] = viewCenter(); kindMenu(r.right - 260, r.bottom + 6, kind => addNode(kind, cx - NODE_W / 2, cy - 50)); },
+  'menu-kind':b => { const cb = menuCb; closeMenu(); cb && cb(b.dataset.kind); },
+  'menu-part':() => { closeMenu(); const [cx, cy] = viewCenter(); partPicker('Add a part', p => addNodeFromPart(p, cx - NODE_W / 2, cy - 50)); },
+  swap:() => { const f = curFlow(); const n = nodeById(f, [...S.sel][0]); if (!n) return; if (!Object.keys(S.parts).length) { toast('The parts library is empty. Save a node as a part first.'); return; } partPicker(`Swap “${view(n).title}” for…`, p => { beginChange(f.id); const keep = {id:n.id, part:p.id, x:n.x, y:n.y, editedAt:nowISO()}; for (const k of Object.keys(n)) delete n[k]; Object.assign(n, keep); touchFlow(f.id); renderFlow(); renderLegend(); renderInspector(); toast('Swapped. This step now follows the part; connections kept.', 'Undo', undo); }); },
+  'save-part':() => { const n = nodeById(curFlow(), [...S.sel][0]); if (!n) return; if (n.part) { toast('This step already comes from a part.'); return; } partForm(null, n); },
+  'edge-reverse':() => { const f = curFlow(); const e = f.edges.find(x => x.id === S.selEdge); if (!e) return; if (f.edges.some(x => x.from === e.to && x.to === e.from)) { toast('These two are already connected the other way.'); return; } beginChange(f.id); [e.from, e.to] = [e.to, e.from]; e.id = `${e.from}>${e.to}`; S.selEdge = e.id; touchFlow(f.id); drawWires(); renderInspector(); },
+  'flow-settings':() => { const f = curFlow(); if (f && S.canWrite) flowForm(f, 'settings'); },
+  'flow-new':() => flowForm(null, 'new'),
+  'dup-flow':() => flowForm(curFlow(), 'dup'),
+  'del-flow':() => deleteFlow(curFlow()),
+  'flow-accounts':b => { const f = curFlow(); const accts = Object.values(S.accounts).filter(a => a.flow === f.id); const r = b.getBoundingClientRect(); openMenuAt(r.left, r.bottom + 6, accts.map(a => `<button class="k-account" data-act="acct-open" data-id="${esc(a.id)}"><span class="ic">${ic(PLATFORM_ICON[a.platform] || 'users',14)}</span><span><b>${esc(a.handle || a.label)}</b><small>${esc(a.status || '')}${a.purpose ? ' · ' + esc(a.purpose.slice(0, 60)) : ''}</small></span></button>`).join('') + (S.canWrite ? `${accts.length ? '<hr>' : ''}<button data-act="acct-add-here"><span class="ic">${ic('plus',14)}</span><span><b>Add an account here</b><small>Set up a new ${esc(f.name)} account</small></span></button>` : '')); },
+  'acct-add-here':() => { closeMenu(); const f = curFlow(); const sample = Object.values(S.accounts).find(a => a.flow === f.id); accountForm(null, {flow:f.id, platform:sample?.platform || f.name}); },
+  'acct-open':b => { closeMenu(); const a = S.accounts[b.dataset.id]; if (!a) return; S.af = {platform:a.platform, status:'', q:a.handle || a.label || ''}; go('accounts'); },
+  'acct-add':() => accountForm(null), 'acct-add-p':b => accountForm(null, {platform:b.dataset.platform, flow:Object.values(S.accounts).find(a => a.platform === b.dataset.platform)?.flow || ''}),
+  'acct-edit':b => accountForm(S.accounts[b.dataset.id]),
+  'acct-dup':b => { const a = clone(S.accounts[b.dataset.id]); delete a.id; a.handle = ''; a.label = (a.label || a.platform) + ' (new)'; accountForm(null, a); },
+  'acct-place':b => placeAccount(S.accounts[b.dataset.id]),
+  'acct-del':async b => {
+    const a = S.accounts[b.dataset.id]; if (!a) return;
+    const name = a.handle || a.label || a.id, nodes = accountUse(a.id);
+    const parts = Object.values(S.parts).filter(p => p.kind === 'account' && p.account === a.id);
+    const why = await reasonBox(`Delete the account “${name}”?`, (nodes.length ? `${nodes.length} step${nodes.length > 1 ? 's show it on a canvas; they become ordinary steps and keep their' : ' shows it on a canvas; it becomes an ordinary step and keeps its'} text. ` : 'It is not placed on any canvas. ') + "It moves to the skill's trash, and History keeps the version from before.");
+    if (!why || !S.accounts[a.id]) return;
+    if (!await deleteDoc('accounts', a.id, why)) return;   // refused or stale: nothing else changes
+    // like a deleted part, nothing is left pointing at the missing account: its steps (and any account part) keep their text
+    const note = `The account ${name} was deleted: ${why}`;
+    for (const f of Object.values(S.flows)) {
+      let ch = false;
+      for (const n of f.nodes) if (!n.part && n.kind === 'account' && n.account === a.id) { if (!ch) beginChange(f.id); ch = true; n.kind = 'step'; if (!n.title || n.title === 'Untitled') n.title = name; delete n.account; n.editedAt = nowISO(); }
+      if (ch) { addReason(f.id, note); touchFlow(f.id); }
+    }
+    const stuck = [];
+    for (const p of parts) { const d = clone(S.parts[p.id] || p); delete d.id; d.kind = 'step'; delete d.account; d.editedAt = nowISO(); if (!await saveDoc('parts', p.id, d)) stuck.push(p.title || p.id); }
+    renderAfterDocChange();
+    toast(stuck.length ? `Account deleted, but ${stuck.length > 1 ? 'these parts' : 'the part'} “${stuck.join('”, “')}” still point${stuck.length > 1 ? '' : 's'} at it: open ${stuck.length > 1 ? 'each' : 'it'} in Parts and change its type.` : 'Account deleted');
+  },
+  'folder-add':() => folderForm(null), 'folder-edit':b => folderForm(S.folders[b.dataset.id]),
+  'folder-del':async b => { const fo = S.folders[b.dataset.id]; const u = (folderUse()[fo.id] || []).length; const why = await reasonBox(`Delete the folder “${fo.label}”?`, u ? `${u} step${u > 1 ? 's' : ''} use it and will lose the link. The folder itself stays on disk.` : 'No steps use it. The folder itself stays on disk.'); if (!why || !S.folders[fo.id]) return; if (!await deleteDoc('folders', fo.id, why)) return; /* refused or stale: the steps keep the folder */ for (const f of Object.values(S.flows)) { let ch = false; for (const n of f.nodes) if (n.folders?.includes(fo.id)) { if (!ch) beginChange(f.id); ch = true; n.folders = n.folders.filter(x => x !== fo.id); } if (ch) touchFlow(f.id); } renderPage(); toast('Folder deleted'); },
+  'nf-unfolder':b => { S.editFolders = S.editFolders.filter(r => (typeof r === 'string' ? r : r.path) !== b.dataset.ref); redrawFolders(); },
+  'nf-newfolder':() => { const i = $('#nf_newPath'); const id = addPathFolder(i.value); if (id && !S.editFolders.includes(id)) { S.editFolders.push(id); redrawFolders(); } i.value = ''; },
+  'part-new':() => partForm(null), 'part-edit':b => partForm(S.parts[b.dataset.id]),
+  'part-del':async b => {
+    const p = S.parts[b.dataset.id]; const u = partUse(p.id);
+    const why = await reasonBox(`Delete the part “${p.title}”?`, u.length ? `${u.length} step${u.length > 1 ? 's follow' : ' follows'} it. Each keeps the text as its own.` : 'No step uses it.');
+    if (!why || !S.parts[p.id]) return;
+    // steps that follow the part take a copy of its text first, so nothing is left pointing at a missing part
+    for (const f of Object.values(S.flows)) { let ch = false; for (const n of f.nodes) if (n.part === p.id) { if (!ch) beginChange(f.id); ch = true; detachNode(n); } if (ch) touchFlow(f.id); }
+    const ok = await deleteDoc('parts', p.id, why); renderAfterDocChange(); if (ok) toast('Part deleted');   // the steps keep their copy either way
+  },
+  'part-add':b => { const p = S.parts[b.dataset.id]; flowPicker(`Add “${p.title}” to…`, fid => { go(fid); setTimeout(() => { const [x, y] = viewCenter(); addNodeFromPart(p, x - NODE_W / 2, y - 50); }, 60); }); },
+  'res-node':b => { closeRail(); focusNode(b.dataset.flow, b.dataset.id); },
+  'res-acct':b => { const a = S.accounts[b.dataset.id]; S.af = {platform:a.platform, status:'', q:a.handle || a.label || ''}; go('accounts'); },
+  'res-folder':() => go('folders'),
+  'hist-tab':b => { S.hf.tab = b.dataset.tab; S.hf.open = null; pageHistory(); },
+  'hist-open':b => { S.hf.open = S.hf.open === b.dataset.id ? null : b.dataset.id; const y = page.scrollTop; pageHistory().then(() => { page.scrollTop = y; }); },
+  versions:b => versionsModal(b.dataset.col, b.dataset.id),
+  'flow-history':() => versionsModal('flows', S.flowId),
+  shortcuts:() => openModal(`<h2>Shortcuts</h2><div class="kbd-list"><kbd>Drag board</kbd><span>Move around</span><kbd>Wheel</kbd><span>Zoom</span><kbd>Shift + drag</kbd><span>Select a group</span><kbd>Shift + click</kbd><span>Add to selection</span><kbd>Drag a node’s right dot</kbd><span>Connect it (drop on empty space to add a new step)</span><kbd>Double-click</kbd><span>Edit a node, or add one on empty board</span><kbd>Enter</kbd><span>Edit the selected node</span><kbd>Ctrl + C / V</kbd><span>Copy and paste nodes, across flows too</span><kbd>Ctrl + D</kbd><span>Duplicate</span><kbd>Delete</kbd><span>Delete the selection</span><kbd>Ctrl + Z</kbd><span>Undo (Ctrl + Shift + Z to redo)</span><kbd>Ctrl + A</kbd><span>Select every node</span><kbd>F</kbd><span>Fit to screen (press again on a wide flow to see all of it)</span><kbd>+ / −</kbd><span>Zoom in and out</span><kbd>/</kbd><span>Search</span><kbd>Esc</kbd><span>Close and deselect</span></div><div class="mact"><span class="sp"></span><button class="btn primary" data-act="modal-close">Done</button></div>`)
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const fn = ACT[b.dataset.act]; if (!fn) return;
+  if (b.tagName === 'A') e.preventDefault();
+  fn(b, e);
+  // a mouse click on a board or toolbar button hands focus back to the board: the next shortcut key then neither
+  // lands on that button nor makes the browser draw a focus ring on it (keyboard use keeps focus where it is)
+  if (e.detail > 0 && S.view === 'flow' && document.activeElement === b && b.closest('.boardui, .bar')) board.focus({preventScroll:true});
+});
+const textSelected = () => typeof getSelection === 'function' && String(getSelection() || '').trim() !== '';
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase(); const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+  if (e.key === 'Escape') { if (!menu.hidden) { closeMenu(); return; } if (!modal.hidden) { closeModal(); return; } if (typing) { e.target.blur(); return; } if (S.editing) { S.editing = null; renderInspector(); return; } clearSel(); closeRail(); return; }
+  if (typing || !modal.hidden || !menu.hidden) return;   // an open menu has its own keys (arrows, Enter on an item)
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('button,a,summary')) return;   // a focused control does its own thing
+  const mod = e.ctrlKey || e.metaKey;
+  if (e.key === '/') { e.preventDefault(); openRail(); $('#q').focus(); return; }
+  if (S.view !== 'flow') return;
+  const k = e.key.toLowerCase();
+  if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && k === 'y') { e.preventDefault(); redo(); return; }
+  if (mod && k === 'c') { if (S.sel.size && !textSelected()) { e.preventDefault(); copySel(); } return; }   // copying highlighted text still copies the text
+  if (mod && k === 'v') { if (S.canWrite) { e.preventDefault(); pasteClip(); } return; }
+  if (mod && k === 'd') { e.preventDefault(); duplicateSel(); return; }
+  if (mod && k === 'a') { e.preventDefault(); S.sel = new Set(curFlow().nodes.map(n => n.id)); S.selEdge = null; S.editing = null; refreshSel(); renderInspector(); return; }
+  if (mod) return;
+  if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSelection(); return; }
+  if (e.key === 'Enter' && S.sel.size === 1 && S.canWrite && S.editing) return;
+  if (e.key === 'Enter' && S.sel.size === 1 && S.canWrite) { e.preventDefault(); ACT.edit(); return; }
+  if (k === 'f') { fitKey(); return; }
+  if (e.key === '+' || e.key === '=') { zoomCenter(1.2); return; }
+  if (e.key === '-') { zoomCenter(1 / 1.2); return; }
+});
+
+boot();
+})();
+</script>

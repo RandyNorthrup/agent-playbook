@@ -1,0 +1,17 @@
+{
+ "platform": "GitHub",
+ "handle": "acme-notes",
+ "label": "GitHub organisation",
+ "owner": "Sam",
+ "status": "active",
+ "flow": "release",
+ "purpose": "Where releases, the README and the CHANGELOG live.",
+ "login": "gh CLI, signed in by the owner.",
+ "url": "",
+ "projects": [
+  "acme-notes"
+ ],
+ "notes": [
+  "Demo account."
+ ]
+}

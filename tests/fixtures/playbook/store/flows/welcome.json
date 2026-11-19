@@ -1,0 +1,107 @@
+{
+ "name": "Welcome",
+ "group": "Start here",
+ "icon": "map",
+ "summary": "Where a run starts: read the rules, then post.",
+ "order": 0,
+ "nodes": [
+  {
+   "id": "welcome-start",
+   "kind": "start",
+   "title": "Begin a run",
+   "sub": "Read this first",
+   "body": "- Open the rules.\n- Then pick a platform.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "welcome-rules",
+   "kind": "step",
+   "title": "Read the rules",
+   "sub": "Before anything else",
+   "body": "Read every rule attached to this step.",
+   "checks": [
+    "Rules read",
+    "Accounts checked"
+   ],
+   "folders": [
+    "helper-scripts"
+   ],
+   "links": [
+    {
+     "label": "Example",
+     "url": "https://example.com/rules"
+    }
+   ],
+   "src": [
+    "session:fixture"
+   ],
+   "origin": "Sam, 01-02: \"always read the rules first\".",
+   "x": 320,
+   "y": 0
+  },
+  {
+   "id": "welcome-honest",
+   "kind": "rule",
+   "title": "Say only what is true",
+   "body": "Never invent a result.",
+   "x": 320,
+   "y": 200
+  },
+  {
+   "id": "welcome-choose",
+   "kind": "decision",
+   "title": "Post or stop?",
+   "sub": "Is there something new to say",
+   "body": "Post only when there is something new.",
+   "x": 640,
+   "y": 0
+  },
+  {
+   "id": "welcome-post",
+   "kind": "goto",
+   "title": "Posting",
+   "sub": "When there is something new",
+   "goto": "posting",
+   "x": 960,
+   "y": -100
+  },
+  {
+   "id": "welcome-done",
+   "kind": "output",
+   "title": "Run finished",
+   "body": "Report what was done.",
+   "x": 960,
+   "y": 100
+  }
+ ],
+ "edges": [
+  {
+   "from": "welcome-start",
+   "to": "welcome-rules",
+   "type": "flow"
+  },
+  {
+   "from": "welcome-honest",
+   "to": "welcome-rules",
+   "type": "attach"
+  },
+  {
+   "from": "welcome-rules",
+   "to": "welcome-choose",
+   "type": "flow"
+  },
+  {
+   "from": "welcome-choose",
+   "to": "welcome-post",
+   "type": "flow",
+   "label": "post"
+  },
+  {
+   "from": "welcome-choose",
+   "to": "welcome-done",
+   "type": "flow",
+   "label": "stop"
+  }
+ ]
+}

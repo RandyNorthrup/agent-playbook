@@ -1,0 +1,20 @@
+{
+ "name": "Chalkboard",
+ "style": "Hand-drawn chalk illustration on a dark slate-green school chalkboard with a faint smudged eraser haze, bold rounded white chalk lines with a dusty grain, flat pastel chalk fills used sparingly, and soft sky-blue chalk for highlights and the one key accent in each scene, high contrast and easy to read on a small phone screen. Screens, signs, letters and forms are drawn as simple outlined shapes with no readable writing unless a label is given. Backgrounds stay mostly bare board, with at most a window frame, a doorway or a table edge to set the place.",
+ "character": "The recurring cast must match the attached character sheet exactly: OTTO (60s, tall and lanky, neat grey beard, flat cap, green knitted vest over a white shirt), PRIYA (30s, short black bob, large hoop earrings, orange rain jacket) and their neighbour LEN (50s, round face, curly red hair, striped apron). They are drawn as warm, sensible, good-humoured people with natural adult proportions, never as the butt of a joke. Anyone else is drawn in the same chalk style and never wears the cast's signature clothes.",
+ "end_card": {
+  "script": "end_card.py",
+  "args": [
+   "--chalk"
+  ]
+ },
+ "scene_count": [
+  50,
+  65
+ ],
+ "render_flags": [
+  "--pad-solid",
+  "--pad-band",
+  "10:30"
+ ]
+}

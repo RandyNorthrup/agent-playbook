@@ -1,0 +1,6 @@
+{
+ "kind": "rule",
+ "title": "Strip EXIF and GPS",
+ "sub": "Before a phone photo is uploaded",
+ "body": "Re-save the photo as an RGB JPEG with Pillow: that drops EXIF and GPS."
+}

@@ -1,0 +1,97 @@
+{
+ "name": "Bluesky",
+ "group": "Platforms",
+ "icon": "bluesky",
+ "summary": "Bluesky: open the notifications with the public API, answer each one, log.",
+ "order": 4,
+ "nodes": [
+  {
+   "id": "bs-start",
+   "kind": "start",
+   "title": "Bluesky pass",
+   "sub": "Replies and mentions",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "bs-acct",
+   "kind": "account",
+   "title": "acmenotes.example",
+   "sub": "The app's account",
+   "account": "bluesky-acme",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "bs-open",
+   "kind": "step",
+   "title": "Open what's waiting",
+   "sub": "Public API, no login needed",
+   "body": "`python scripts/bsky_open.py acmenotes.example` lists the threads where someone replied and the account hasn't answered yet.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "bs-draft",
+   "kind": "step",
+   "title": "Draft the replies",
+   "sub": "300 characters at most",
+   "body": "Same rules as every reply: one point, no links unless asked.",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "bs-qc",
+   "part": "part-qc-check",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "bs-log",
+   "part": "part-log",
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "bs-done",
+   "kind": "output",
+   "title": "Bluesky answered",
+   "sub": "Each thread replied to or skipped",
+   "x": 1700,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "bs-start",
+   "to": "bs-open",
+   "type": "flow"
+  },
+  {
+   "from": "bs-start",
+   "to": "bs-acct",
+   "type": "flow"
+  },
+  {
+   "from": "bs-open",
+   "to": "bs-draft",
+   "type": "flow"
+  },
+  {
+   "from": "bs-draft",
+   "to": "bs-qc",
+   "type": "flow"
+  },
+  {
+   "from": "bs-qc",
+   "to": "bs-log",
+   "type": "flow",
+   "label": "pass"
+  },
+  {
+   "from": "bs-log",
+   "to": "bs-done",
+   "type": "flow"
+  }
+ ]
+}

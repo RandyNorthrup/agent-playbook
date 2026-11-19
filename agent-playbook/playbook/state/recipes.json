@@ -1,0 +1,313 @@
+{
+ "about": "One recipe per kind of job. scripts/run.py start --recipe <id> opens its checklist; pb.py catalog <id> shows every flow, part, script and QC filter it uses. Each step names the flow or part that does it.",
+ "recipes": {
+  "reply": {
+   "title": "Reply run: answer everyone waiting on every platform",
+   "when": "reply to everyone; a reply run; answer comments",
+   "group": "social",
+   "actions": [
+    "reply",
+    "comment"
+   ],
+   "flows": [
+    "ground-rules",
+    "pacing",
+    "qc"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Read flows ground-rules and pacing; run audit.py today against the caps",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "x",
+     "text": "X @acmenotes_demo: every reply from the last 2 days answered or skipped with a reason",
+     "flow": "x-reply"
+    },
+    {
+     "id": "bluesky",
+     "text": "Bluesky: bsky_open.py acmenotes.example; every thread handled",
+     "flow": "bluesky"
+    },
+    {
+     "id": "reddit",
+     "text": "Reddit: open questions in the account's subs answered where the app fits",
+     "flow": "reddit"
+    },
+    {
+     "id": "log",
+     "text": "Every reply logged and checked live",
+     "flow": "audit"
+    },
+    {
+     "id": "report",
+     "text": "Report: counts per platform, skips with reasons, QC warnings",
+     "part": "part-verify-live"
+    }
+   ]
+  },
+  "round": {
+   "title": "Growth round: replies, one original per platform, close",
+   "when": "do a round; posting and responding run",
+   "group": "social",
+   "actions": [
+    "reply",
+    "post"
+   ],
+   "flows": [
+    "round",
+    "ground-rules"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Ground rules read; caps checked",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "replies",
+     "text": "Reply pass on X, Bluesky and Reddit",
+     "flow": "round"
+    },
+    {
+     "id": "originals",
+     "text": "One original on X from the post bank",
+     "flow": "x-post"
+    },
+    {
+     "id": "close",
+     "text": "run.py finish; the report lists skips and warnings",
+     "flow": "audit"
+    }
+   ]
+  },
+  "post": {
+   "title": "An original post on X and Bluesky",
+   "when": "post something; an original",
+   "group": "social",
+   "actions": [
+    "post"
+   ],
+   "flows": [
+    "ground-rules",
+    "pacing",
+    "qc",
+    "x-post",
+    "bluesky"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Ground rules read; audit.py today against the caps",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "pick",
+     "text": "A post picked from the bank, or written fresh",
+     "flow": "x-post"
+    },
+    {
+     "id": "facts",
+     "text": "Every claim traced to a source read this session",
+     "flow": "qc"
+    },
+    {
+     "id": "qc",
+     "text": "qc.py check passed for each platform's version",
+     "flow": "qc"
+    },
+    {
+     "id": "gap",
+     "text": "audit.py gap says READY right before each send",
+     "flow": "pacing"
+    },
+    {
+     "id": "x",
+     "text": "Posted on X",
+     "flow": "x-post"
+    },
+    {
+     "id": "bluesky",
+     "text": "Rewritten for Bluesky and posted",
+     "flow": "bluesky"
+    },
+    {
+     "id": "live",
+     "text": "Each post checked live",
+     "part": "part-verify-live"
+    },
+    {
+     "id": "logged",
+     "text": "Each post logged with its link",
+     "flow": "audit"
+    },
+    {
+     "id": "report",
+     "text": "Report: links, skips, QC warnings",
+     "flow": "qc"
+    }
+   ]
+  },
+  "news-share": {
+   "title": "Share a news finding in the owner's voice",
+   "when": "post news; share an article",
+   "group": "social",
+   "actions": [
+    "post"
+   ],
+   "flows": [
+    "ground-rules",
+    "pacing",
+    "qc",
+    "x-post"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Ground rules read",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "source",
+     "text": "The original source read this session (URL), not a summary of it",
+     "flow": "x-post"
+    },
+    {
+     "id": "draft",
+     "text": "A finding or a trend in the owner's voice, never another company's ad",
+     "flow": "x-post"
+    },
+    {
+     "id": "qc",
+     "text": "qc.py check --recipe news-share passed",
+     "flow": "qc"
+    },
+    {
+     "id": "gap",
+     "text": "audit.py gap says READY",
+     "flow": "pacing"
+    },
+    {
+     "id": "send",
+     "text": "Posted with one link, the source",
+     "flow": "x-post"
+    },
+    {
+     "id": "live",
+     "text": "Checked live",
+     "part": "part-verify-live"
+    },
+    {
+     "id": "logged",
+     "text": "Logged with its link",
+     "flow": "audit"
+    }
+   ]
+  },
+  "release": {
+   "title": "Announce a release of the owner's app",
+   "when": "promote a release; announce a version",
+   "group": "projects",
+   "actions": [
+    "post"
+   ],
+   "flows": [
+    "release",
+    "acme-notes"
+   ],
+   "steps": [
+    {
+     "id": "notes",
+     "text": "Release notes read; the changes a user would notice listed",
+     "flow": "release"
+    },
+    {
+     "id": "shots",
+     "text": "Real screenshots of the changed screens",
+     "flow": "release"
+    },
+    {
+     "id": "posts",
+     "text": "One fresh post per platform, each QC'd and logged",
+     "flow": "release"
+    }
+   ]
+  },
+  "banner": {
+   "title": "A banner, card or other art",
+   "when": "make a banner; social preview; key art",
+   "group": "art",
+   "flows": [
+    "art"
+   ],
+   "steps": [
+    {
+     "id": "method",
+     "text": "Method picked by the job",
+     "flow": "art"
+    },
+    {
+     "id": "checks",
+     "text": "Image checks passed at full size",
+     "flow": "art"
+    },
+    {
+     "id": "file",
+     "text": "Filed with its prompt or source",
+     "flow": "art"
+    }
+   ]
+  },
+  "lesson": {
+   "title": "Put a lesson into the playbook",
+   "when": "the owner corrects something; a new rule; something broke",
+   "group": "playbook",
+   "flows": [
+    "playbook"
+   ],
+   "steps": [
+    {
+     "id": "where",
+     "text": "The piece that owns the lesson picked",
+     "flow": "playbook"
+    },
+    {
+     "id": "save",
+     "text": "Saved through the canvas or pb.py put",
+     "flow": "playbook"
+    },
+    {
+     "id": "check",
+     "text": "pb.py check --strict exits 0",
+     "flow": "playbook"
+    }
+   ]
+  },
+  "onboard": {
+   "title": "Set up a new machine or a new owner",
+   "when": "set up on a new machine; first run",
+   "group": "playbook",
+   "flows": [
+    "onboard"
+   ],
+   "steps": [
+    {
+     "id": "doctor",
+     "text": "doctor.py passes",
+     "flow": "onboard"
+    },
+    {
+     "id": "accounts",
+     "text": "The owner's accounts and folders registered",
+     "flow": "onboard"
+    },
+    {
+     "id": "check",
+     "text": "pb.py check --strict exits 0",
+     "flow": "onboard"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,91 @@
+{
+ "feed": [
+  {
+   "post": {
+    "uri": "at://did:plc:author1/app.bsky.feed.post/3aaa111",
+    "cid": "bafy3aaa111",
+    "author": {
+     "did": "did:plc:author1",
+     "handle": "Example.Dev",
+     "displayName": "Example"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "Fresh post\nwith two lines",
+     "createdAt": "2026-11-09T10:00:00.000Z"
+    },
+    "replyCount": 4,
+    "repostCount": 0,
+    "likeCount": 10,
+    "indexedAt": "2026-11-09T10:00:00.000Z"
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:author1/app.bsky.feed.post/3aaa222",
+    "cid": "bafy3aaa222",
+    "author": {
+     "did": "did:plc:author1",
+     "handle": "example.dev",
+     "displayName": "example"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "Earlier today",
+     "createdAt": "2026-11-09T02:30:00Z"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 50,
+    "indexedAt": "2026-11-09T02:30:00Z"
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:friend/app.bsky.feed.post/3bbb111",
+    "cid": "bafy3bbb111",
+    "author": {
+     "did": "did:plc:friend",
+     "handle": "friend.example",
+     "displayName": "friend"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "A post the account reposted",
+     "createdAt": "2026-11-09T09:00:00.000Z"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 999,
+    "indexedAt": "2026-11-09T09:00:00.000Z"
+   },
+   "reason": {
+    "$type": "app.bsky.feed.defs#reasonRepost",
+    "by": {
+     "handle": "example.dev"
+    }
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:author1/app.bsky.feed.post/3aaa333",
+    "cid": "bafy3aaa333",
+    "author": {
+     "did": "did:plc:author1",
+     "handle": "example.dev",
+     "displayName": "example"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "Two days old",
+     "createdAt": "2026-11-07T10:00:00.123456Z"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 500,
+    "indexedAt": "2026-11-07T10:00:00.123456Z"
+   }
+  }
+ ],
+ "cursor": "2026-11-07T10:00:00.123Z"
+}

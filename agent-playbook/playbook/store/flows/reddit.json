@@ -1,0 +1,123 @@
+{
+ "name": "Reddit",
+ "group": "Platforms",
+ "icon": "reddit",
+ "summary": "Answer questions the owner's app really solves, in subs that allow it, with the affiliation said.",
+ "order": 5,
+ "nodes": [
+  {
+   "id": "rd-start",
+   "kind": "start",
+   "title": "Reddit pass",
+   "sub": "Answers, not ads",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "rd-acct",
+   "kind": "account",
+   "title": "u/acmenotes_demo",
+   "sub": "The owner's Reddit account",
+   "account": "reddit-acme",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "rd-find",
+   "kind": "step",
+   "title": "Find questions to answer",
+   "sub": "Where the app is a real answer",
+   "body": "- Search the subs listed in the account's notes for open questions.\n- Skip any thread where the app isn't the honest best answer.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "rd-rules",
+   "kind": "rule",
+   "title": "Read the sub's rules first",
+   "sub": "Every sub, every time",
+   "body": "- Self-promotion rules differ per sub: some ban links, some want a flair.\n- A removed post means stop in that sub this round (flow pacing).",
+   "x": 340,
+   "y": -200
+  },
+  {
+   "id": "rd-answer",
+   "kind": "step",
+   "title": "Write the answer",
+   "sub": "Useful without the app",
+   "body": "- Answer the question first; mention the app only where it fits.\n- Say it is the owner's app: \"(I work on Acme Notes)\".",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "rd-qc",
+   "part": "part-qc-check",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "rd-read",
+   "part": "part-read-back",
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "rd-log",
+   "part": "part-log",
+   "x": 1700,
+   "y": 0
+  },
+  {
+   "id": "rd-done",
+   "kind": "output",
+   "title": "Answered",
+   "sub": "Logged with the thread link",
+   "x": 2040,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "rd-start",
+   "to": "rd-find",
+   "type": "flow"
+  },
+  {
+   "from": "rd-start",
+   "to": "rd-acct",
+   "type": "flow"
+  },
+  {
+   "from": "rd-find",
+   "to": "rd-answer",
+   "type": "flow"
+  },
+  {
+   "from": "rd-answer",
+   "to": "rd-qc",
+   "type": "flow"
+  },
+  {
+   "from": "rd-qc",
+   "to": "rd-read",
+   "type": "flow",
+   "label": "pass"
+  },
+  {
+   "from": "rd-read",
+   "to": "rd-log",
+   "type": "flow",
+   "label": "sent"
+  },
+  {
+   "from": "rd-log",
+   "to": "rd-done",
+   "type": "flow"
+  },
+  {
+   "from": "rd-rules",
+   "to": "rd-find",
+   "type": "attach"
+  }
+ ]
+}

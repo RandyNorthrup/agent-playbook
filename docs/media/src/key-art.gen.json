@@ -1,0 +1,13 @@
+{
+ "prompt_sha256": "65a11079881d7c019c9de26d5a3322bdd44d61493f2817acf945f129cf6b0f7d",
+ "refs": [],
+ "tries": 1,
+ "seconds": 36.5,
+ "quota_used_percent": 5.0,
+ "rejected": [],
+ "accepted": true,
+ "size": [
+  1672,
+  941
+ ]
+}

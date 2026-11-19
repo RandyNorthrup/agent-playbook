@@ -1,0 +1,18 @@
+{
+ "platform": "X",
+ "handle": "@acmenotes_demo",
+ "label": "Acme Notes on X",
+ "owner": "Sam",
+ "status": "active",
+ "flow": "x",
+ "purpose": "Release news, tips and replies about Acme Notes.",
+ "pacing": "About 2 replies per person a day; 1 to 3 originals.",
+ "login": "The owner signs in; the agent never handles passwords.",
+ "url": "",
+ "projects": [
+  "acme-notes"
+ ],
+ "notes": [
+  "Demo account: replace it with your own in the canvas Accounts panel."
+ ]
+}

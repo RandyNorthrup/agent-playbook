@@ -1,0 +1,12 @@
+{
+ "kind": "check",
+ "title": "Read the field back",
+ "sub": "Before pressing Post",
+ "body": "Read what is in the box before posting it.",
+ "checks": [
+  "Text matches the draft"
+ ],
+ "src": [
+  "fixture"
+ ]
+}

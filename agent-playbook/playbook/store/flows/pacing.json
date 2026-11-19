@@ -1,0 +1,145 @@
+{
+ "name": "Pacing and platform rules",
+ "group": "Rules & QC",
+ "icon": "spam",
+ "summary": "The caps per platform, the spacing between sends, links and hashtags, and the signs that mean stop.",
+ "order": 2,
+ "nodes": [
+  {
+   "id": "pace-start",
+   "kind": "start",
+   "title": "Before a batch",
+   "sub": "Replies, originals or follows",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "pace-caps",
+   "kind": "step",
+   "title": "The caps table",
+   "sub": "Per account, per day",
+   "body": "- X: about 2 replies per person a day; 1 to 3 originals.\n- Bluesky: 1 original a day; replies as people talk to the owner.\n- Reddit: answers only where the sub allows them; at most 3 posts about the app a day, 2 hours apart.\n- `python playbook/audit.py today` against this table.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "pace-space",
+   "kind": "step",
+   "title": "Space the sends",
+   "sub": "Never empty a cap in one burst",
+   "body": "- 30 to 90 seconds between replies; minutes between originals.\n- Keep quiet hours in the owner's time zone.",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "pace-signs",
+   "kind": "decision",
+   "title": "Any warning signs?",
+   "sub": "Removals, reports, rate limits",
+   "body": "- A post removed by moderators, a warning from the platform, a rate-limit page.\n- People asking who runs the account: answer honestly (flow ground-rules).",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "pace-stop",
+   "kind": "step",
+   "title": "Stop and tell the owner",
+   "sub": "No more sends on that platform this round",
+   "body": "Report what happened, where, and the link. The owner decides when to resume.",
+   "x": 1360,
+   "y": -200
+  },
+  {
+   "id": "pace-links",
+   "kind": "rule",
+   "title": "Links, sparingly",
+   "sub": "Replies carry none unless asked",
+   "body": "- Organic replies carry no links unless the thread asks for one.\n- Originals carry at most one, only when the link is the point.",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "pace-tags",
+   "kind": "rule",
+   "title": "Hashtags",
+   "sub": "Two at most on X and Bluesky",
+   "body": "- X and Bluesky: 0 to 2. LinkedIn: up to 3. Instagram, YouTube, TikTok: up to 5.\n- No emoji walls.",
+   "x": 680,
+   "y": 200
+  },
+  {
+   "id": "pace-promo",
+   "kind": "rule",
+   "title": "Promo again in the same place",
+   "sub": "Earn it with posts that aren't promos",
+   "body": "- A post about the owner's app in a place where that app was already promoted waits until the account's last 4 posts on that platform include no promo.\n- QC filter new-post-rule enforces it.",
+   "x": 1020,
+   "y": 200
+  },
+  {
+   "id": "pace-ok",
+   "kind": "output",
+   "title": "Keep going",
+   "sub": "Inside the caps, no warning signs",
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "pace-stopped",
+   "kind": "output",
+   "title": "Paused",
+   "sub": "The owner decides what's next",
+   "x": 1700,
+   "y": -200
+  }
+ ],
+ "edges": [
+  {
+   "from": "pace-start",
+   "to": "pace-caps",
+   "type": "flow"
+  },
+  {
+   "from": "pace-caps",
+   "to": "pace-space",
+   "type": "flow"
+  },
+  {
+   "from": "pace-space",
+   "to": "pace-signs",
+   "type": "flow"
+  },
+  {
+   "from": "pace-signs",
+   "to": "pace-stop",
+   "type": "flow",
+   "label": "yes"
+  },
+  {
+   "from": "pace-signs",
+   "to": "pace-ok",
+   "type": "flow",
+   "label": "no"
+  },
+  {
+   "from": "pace-stop",
+   "to": "pace-stopped",
+   "type": "flow"
+  },
+  {
+   "from": "pace-links",
+   "to": "pace-caps",
+   "type": "attach"
+  },
+  {
+   "from": "pace-tags",
+   "to": "pace-space",
+   "type": "attach"
+  },
+  {
+   "from": "pace-promo",
+   "to": "pace-signs",
+   "type": "attach"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "platform": "Reddit",
+ "handle": "u/acmenotes_demo",
+ "label": "Reddit",
+ "owner": "Sam",
+ "status": "replies-only",
+ "flow": "reddit",
+ "purpose": "Answers to questions the app really solves, with the affiliation said.",
+ "pacing": "At most 1 post a day; answers only where the sub allows them.",
+ "login": "The owner signs in.",
+ "url": "",
+ "projects": [
+  "acme-notes"
+ ],
+ "notes": [
+  "Subs: r/notetaking, r/Markdown, r/selfhosted.",
+  "Demo account."
+ ]
+}

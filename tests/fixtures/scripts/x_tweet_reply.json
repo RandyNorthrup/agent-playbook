@@ -1,0 +1,17 @@
+{
+ "__typename": "Tweet",
+ "id_str": "1900000000000000010",
+ "text": "@ExampleDev does it run on Linux?",
+ "in_reply_to_screen_name": "ExampleDev",
+ "in_reply_to_status_id_str": "1900000000000000001",
+ "user": {
+  "screen_name": "CuriousUser"
+ },
+ "parent": {
+  "id_str": "1900000000000000001",
+  "text": "Shipping the new build today.",
+  "user": {
+   "screen_name": "ExampleDev"
+  }
+ }
+}

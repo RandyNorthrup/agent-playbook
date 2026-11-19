@@ -1,0 +1,1310 @@
+{
+ "about": "The QC filters every draft passes (python playbook/qc.py check). Severity: block = can't be sent or logged without --override; warn = goes out, listed in the report; ask = a judgment the agent answers with --ok <id>=\"evidence\" (unanswered blocks). Every filter names the rule or incident it came from (src) and carries examples: bad ones it must catch and good ones it must pass; qc.py selftest runs them all. To add a filter: copy the closest one, give it a new id, its src, and at least one bad and one good example, then run qc.py selftest and pb.py check --strict. Types: account, ignore, already-replied, author-cap, pattern, never-say, links, hashtags, length, tld, new-post-rule, caps, pacing, duplicate, question-ratio, ask.",
+ "filters": [
+  {
+   "id": "account-registry",
+   "type": "account",
+   "severity": "block",
+   "message": "the account isn't in the registry for this platform",
+   "src": "flow audit: a reply was logged under the owner's name instead of the handle",
+   "examples": {
+    "bad": [
+     {
+      "text": "Thanks!",
+      "platform": "X",
+      "account": "@SomeoneElse",
+      "action": "reply",
+      "target": "https://x.com/dev/status/1",
+      "registry": {
+       "X": [
+        "@acmenotes_demo"
+       ]
+      }
+     }
+    ],
+    "good": [
+     {
+      "text": "Thanks!",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "target": "https://x.com/dev/status/1",
+      "registry": {
+       "X": [
+        "@acmenotes_demo"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "ignore-list",
+   "type": "ignore",
+   "severity": "block",
+   "list": "ignore",
+   "message": "the owner asked to ignore this person (qc/lists.json ignore)",
+   "src": "qc/lists.json: the ignore list",
+   "examples": {
+    "bad": [
+     {
+      "text": "Thanks, glad it helped.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "reply",
+      "target_author": "Pat Example"
+     }
+    ],
+    "good": [
+     {
+      "text": "Thanks, glad it helped.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "reply",
+      "target_author": "Jane Doe"
+     }
+    ]
+   }
+  },
+  {
+   "id": "already-replied",
+   "type": "already-replied",
+   "severity": "block",
+   "applies": {
+    "kinds": [
+     "reply"
+    ]
+   },
+   "message": "already replied to this from this account; never double reply",
+   "src": "flow x-reply: never double reply",
+   "examples": {
+    "bad": [
+     {
+      "text": "Good point.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "target": "https://x.com/dev/status/123",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/dev/status/123?s=20",
+        "at": "2026-11-10T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Earlier reply."
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "Good point.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "target": "https://x.com/dev/status/124",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/dev/status/123",
+        "at": "2026-11-10T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Earlier reply."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "author-cap",
+   "type": "author-cap",
+   "severity": "warn",
+   "max": 2,
+   "applies": {
+    "kinds": [
+     "reply"
+    ]
+   },
+   "message": "about 2 replies per person a day (flow pacing, the caps table)",
+   "src": "flow pacing: the caps table",
+   "examples": {
+    "bad": [
+     {
+      "text": "Same here.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "target": "https://x.com/dev/status/300",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/dev/status/100",
+        "at": "2026-11-11T08:00:00-08:00",
+        "at_precision": "exact",
+        "text": "One."
+       },
+       {
+        "id": "h2",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/dev/status/200",
+        "at": "2026-11-11T09:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Two."
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "Same here.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "target": "https://x.com/dev/status/300",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/dev/status/100",
+        "at": "2026-11-11T08:00:00-08:00",
+        "at_precision": "exact",
+        "text": "One."
+       }
+      ]
+     },
+     {
+      "text": "The repo, for anyone asking.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "target": "https://x.com/acmenotes_demo/status/300",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/acmenotes_demo/status/100",
+        "at": "2026-11-11T08:00:00-08:00",
+        "at_precision": "exact",
+        "text": "One."
+       },
+       {
+        "id": "h2",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "target": "https://x.com/acmenotes_demo/status/200",
+        "at": "2026-11-11T09:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Two."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ai-denial",
+   "type": "pattern",
+   "severity": "block",
+   "list": "ai_denial",
+   "message": "never deny being AI or claim to be human (flow ground-rules)",
+   "src": "flow ground-rules: be honest about automation",
+   "examples": {
+    "bad": [
+     {
+      "text": "Ha, I'm not a bot, just quick at typing.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply"
+     },
+     {
+      "text": "Real human here, promise.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "reply"
+     }
+    ],
+    "good": [
+     {
+      "text": "Fair question. Some of these posts are drafted with AI help.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply"
+     }
+    ]
+   }
+  },
+  {
+   "id": "never-say",
+   "type": "never-say",
+   "severity": "block",
+   "message": "the app's never-say list (its project flow)",
+   "src": "flow acme-notes: Never say",
+   "examples": {
+    "bad": [
+     {
+      "text": "Acme Notes syncs in real time across every device.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "project": "acme-notes"
+     },
+     {
+      "text": "Acme Notes keeps your notes end-to-end encrypted.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Acme Notes keeps every note as a plain markdown file.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "project": "acme-notes"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ad-copy",
+   "type": "pattern",
+   "severity": "block",
+   "list": "ad_copy",
+   "unless_own_project": true,
+   "message": "reads as an ad for another company: price, plan, install line or call to buy (flow ground-rules, no free ads)",
+   "src": "flow ground-rules: no free ads",
+   "examples": {
+    "bad": [
+     {
+      "text": "Their new plan is $20/month and you can npm install it today.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "place": "notes-group"
+     },
+     {
+      "text": "Google shipped Modern Web Guidance 1.0 for coding agents.\n\nOne-line install: npx modern-web-guidance@latest install",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "A new study says most teams now review AI code the same way as human code.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "place": "notes-group"
+     }
+    ]
+   }
+  },
+  {
+   "id": "brand-launch",
+   "type": "pattern",
+   "severity": "block",
+   "list": "launch_wording",
+   "and_list": "brands",
+   "unless_own_project": true,
+   "message": "another company's product launch or feature news: skip it (flow ground-rules, no free ads)",
+   "src": "flow ground-rules: no free ads",
+   "examples": {
+    "bad": [
+     {
+      "text": "Globex just launched a notes app with AI search.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     },
+     {
+      "text": "Globex added realtime voice notes to its app.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Background agents are changing how people split work between sessions.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "product-news",
+   "type": "pattern",
+   "severity": "ask",
+   "list": "launch_wording",
+   "unless_own_project": true,
+   "applies": {
+    "kinds": [
+     "post"
+    ]
+   },
+   "message": "reads like product news (launch or feature wording): is the story a finding or a trend, not another company's product? Say why, or skip it",
+   "src": "flow ground-rules: no free ads",
+   "examples": {
+    "bad": [
+     {
+      "text": "Vibe coding has its own keyboard now. Four keys: send, voice, accept, stop.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     },
+     {
+      "text": "Acme added realtime voice calls with your coding agents.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     },
+     {
+      "text": "Voice calls with your coding agents: https://acme.example/changelog/voice",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Hot take: the best agent prompt is a good commit history.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     },
+     {
+      "text": "Tests decide who is responsible for what ships. If you've shipped a few apps, what would you tell a beginner?",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     },
+     {
+      "text": "I added a test before the fix and it caught the real bug.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     },
+     {
+      "text": "Google's Modern Web Guidance 1.0 is out: open skills that steer agents toward current browser features.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "ok": {
+       "product-news": "an open standard from the browser vendors, a trend for builders, not one company's product"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "competitor-original",
+   "type": "pattern",
+   "severity": "block",
+   "list": "competitors",
+   "unless_own_project": true,
+   "applies": {
+    "kinds": [
+     "post"
+    ]
+   },
+   "message": "names a direct competitor of the owner's app in an original post",
+   "src": "flow acme-notes: competitors",
+   "examples": {
+    "bad": [
+     {
+      "text": "NoteForge now syncs notes across devices.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Running several agents side by side changes how you review code.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "competitor-claim",
+   "type": "pattern",
+   "severity": "ask",
+   "list": "competitors",
+   "message": "names a competitor: is the claim sourced, neutral and brief, leading with the owner's app? Answer with the source",
+   "src": "flow acme-notes: competitors",
+   "examples": {
+    "bad": [
+     {
+      "text": "RivalPad lists PDF export as a paid feature.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "project": "acme-notes"
+     }
+    ],
+    "good": [
+     {
+      "text": "RivalPad lists PDF export as a paid feature.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "project": "acme-notes",
+      "ok": {
+       "competitor-claim": "flow acme-notes: the RivalPad pricing page, read this session"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "links-in-reply",
+   "type": "links",
+   "severity": "block",
+   "max": 0,
+   "waivable": true,
+   "applies": {
+    "kinds": [
+     "reply"
+    ],
+    "promo": false
+   },
+   "message": "organic replies carry no links unless the thread asks; if it did, --ok links-in-reply=\"what they asked\"",
+   "src": "flow pacing: links, sparingly",
+   "examples": {
+    "bad": [
+     {
+      "text": "This explains it: https://example.com/guide",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "reply"
+     }
+    ],
+    "good": [
+     {
+      "text": "Clearing the cache first usually fixes that.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "reply"
+     },
+     {
+      "text": "Here it is: https://example.com/guide",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "reply",
+      "ok": {
+       "links-in-reply": "they asked for the link"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "links-in-post",
+   "type": "links",
+   "severity": "warn",
+   "max": 1,
+   "applies": {
+    "kinds": [
+     "post"
+    ]
+   },
+   "message": "originals carry at most one link, only when the link is the point",
+   "src": "flow pacing: links, sparingly",
+   "examples": {
+    "bad": [
+     {
+      "text": "Two reads: https://example.com/a and https://example.com/b",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Worth a read: https://example.com/a",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "youtube-comment-links",
+   "type": "links",
+   "severity": "block",
+   "max": 0,
+   "waivable": true,
+   "applies": {
+    "platforms": [
+     "YouTube"
+    ],
+    "kinds": [
+     "reply"
+    ]
+   },
+   "message": "on other people's channels YouTube holds or hides comments that carry a link: drop the link and name the app instead; on the owner's own videos, --ok youtube-comment-links=\"own channel\"",
+   "src": "YouTube holds comments that carry links on other people's channels",
+   "examples": {
+    "bad": [
+     {
+      "text": "Acme Notes, a free notes app, opens any markdown folder: https://acmenotes.example",
+      "platform": "YouTube",
+      "account": "@acmenotes_demo",
+      "action": "comment",
+      "promo": true
+     }
+    ],
+    "good": [
+     {
+      "text": "Acme Notes, a free notes app, opens any markdown folder.",
+      "platform": "YouTube",
+      "account": "@acmenotes_demo",
+      "action": "comment",
+      "promo": true
+     },
+     {
+      "text": "Download and source: https://github.com/owner/repo",
+      "platform": "YouTube",
+      "account": "@acmenotes_demo",
+      "action": "comment",
+      "promo": true,
+      "ok": {
+       "youtube-comment-links": "own channel"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "hashtags",
+   "type": "hashtags",
+   "severity": "warn",
+   "max": {
+    "default": 2,
+    "instagram": 5,
+    "linkedin": 3,
+    "youtube": 5,
+    "tiktok": 5
+   },
+   "message": "over the hashtag table (flow pacing)",
+   "src": "flow pacing: hashtags",
+   "examples": {
+    "bad": [
+     {
+      "text": "Shipping today #ai #vibecoding #coding #dev",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Shipping today #vibecoding",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "length",
+   "type": "length",
+   "severity": "block",
+   "max": {
+    "x": 280,
+    "bluesky": 300,
+    "threads": 500,
+    "linkedin": 3000,
+    "instagram": 2200,
+    "tiktok": 2200
+   },
+   "message": "too long for the platform",
+   "src": "platform limits",
+   "examples": {
+    "bad": [
+     {
+      "text": "Long thought on agents: the more of them you run, the more your job turns into reading diffs and writing clear task notes. That shift is easy to miss. Clear notes save more time than faster models, because every vague task comes back as a vague diff that someone has to read twice before it can merge.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "post"
+     }
+    ],
+    "good": [
+     {
+      "text": "Clear task notes save more time than faster models.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "tld-autolink",
+   "type": "tld",
+   "severity": "warn",
+   "applies": {
+    "platforms": [
+     "Facebook",
+     "Facebook group",
+     "LinkedIn",
+     "X",
+     "Threads",
+     "Bluesky"
+    ]
+   },
+   "allow": [
+    "acmenotes.app"
+   ],
+   "message": "these words end in a real TLD and turn into links to someone else's site; reword (\"the agents file\")",
+   "src": "words ending in a real TLD turn into links to someone else's site",
+   "examples": {
+    "bad": [
+     {
+      "text": "Put the rules in your agents.md file.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post"
+     },
+     {
+      "text": "Keep the checklist in a notes.md file and link it from the README.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "reply"
+     }
+    ],
+    "good": [
+     {
+      "text": "Put the rules in your agents file.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post"
+     },
+     {
+      "text": "The README: https://github.com/owner/repo/blob/main/README.md",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "new-post-rule",
+   "type": "new-post-rule",
+   "severity": "block",
+   "last": 4,
+   "applies": {
+    "actions": [
+     "post"
+    ]
+   },
+   "message": "the app was already promoted here and the account's recent posts were promos too: post something that isn't a promo first (flow pacing)",
+   "src": "flow pacing: promo again in the same place",
+   "examples": {
+    "bad": [
+     {
+      "text": "Acme Notes is a free, open-source markdown notes app.",
+      "platform": "Reddit",
+      "account": "u/acmenotes_demo",
+      "action": "post",
+      "place": "r/notetaking",
+      "project": "acme-notes",
+      "promo": true,
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "acme-notes",
+        "promo": true,
+        "place": "r/notetaking",
+        "at": "2026-11-05T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "First Acme Notes post."
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "Acme Notes is a free, open-source markdown notes app.",
+      "platform": "Reddit",
+      "account": "u/acmenotes_demo",
+      "action": "post",
+      "place": "r/Markdown",
+      "project": "acme-notes",
+      "promo": true,
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "acme-notes",
+        "promo": true,
+        "place": "r/notetaking",
+        "at": "2026-11-05T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "First Acme Notes post."
+       }
+      ]
+     },
+     {
+      "text": "Acme Notes is a free, open-source markdown notes app.",
+      "platform": "Reddit",
+      "account": "u/acmenotes_demo",
+      "action": "post",
+      "place": "r/notetaking",
+      "project": "acme-notes",
+      "promo": true,
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "acme-notes",
+        "promo": true,
+        "place": "r/notetaking",
+        "at": "2026-11-01T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "First Acme Notes post."
+       },
+       {
+        "id": "h2",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "personal",
+        "promo": false,
+        "at": "2026-11-02T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Bench photo."
+       },
+       {
+        "id": "h3",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "personal",
+        "promo": false,
+        "at": "2026-11-03T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Bench photo two."
+       },
+       {
+        "id": "h4",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "personal",
+        "promo": false,
+        "at": "2026-11-04T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Bench photo three."
+       },
+       {
+        "id": "h5",
+        "platform": "Reddit",
+        "account": "u/acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "project": "personal",
+        "promo": false,
+        "at": "2026-11-05T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Bench photo four."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "caps",
+   "type": "caps",
+   "severity": "block",
+   "caps": [
+    {
+     "platform": "Bluesky",
+     "kind": "post",
+     "max": 1
+    },
+    {
+     "platform": "Instagram",
+     "kind": "post",
+     "max": 2,
+     "min_hours": 8
+    },
+    {
+     "platform": "Reddit",
+     "kind": "post",
+     "promo": true,
+     "max": 3,
+     "min_hours": 2
+    }
+   ],
+   "message": "over the platform's cap (flow pacing)",
+   "src": "flow pacing: the caps table",
+   "examples": {
+    "bad": [
+     {
+      "text": "Second original today.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "post",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Bluesky",
+        "account": "acmenotes.example",
+        "action": "post",
+        "status": "live",
+        "at": "2026-11-11T09:00:00-08:00",
+        "at_precision": "exact",
+        "text": "First original today."
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "Today's original.",
+      "platform": "Bluesky",
+      "account": "acmenotes.example",
+      "action": "post",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Bluesky",
+        "account": "acmenotes.example",
+        "action": "post",
+        "status": "live",
+        "at": "2026-11-10T09:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Yesterday's original."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "pacing-now",
+   "type": "pacing",
+   "severity": "warn",
+   "message": "too soon after the last send of this kind; audit.py gap right before sending",
+   "src": "flow pacing: space the sends",
+   "examples": {
+    "bad": [
+     {
+      "text": "Agreed.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "at": "2026-11-11T12:00:10-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "at": "2026-11-11T12:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Earlier."
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "Agreed.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "at": "2026-11-11T12:00:10-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "at": "2026-11-11T11:58:00-08:00",
+        "at_precision": "exact",
+        "text": "Earlier."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "near-duplicate",
+   "type": "duplicate",
+   "severity": "warn",
+   "warn_ratio": 0.8,
+   "block_ratio": 0.92,
+   "days": 14,
+   "min_len": 40,
+   "message": "nearly the same as an earlier post: write each one fresh (flow pacing)",
+   "src": "flow release: rewritten per platform, never pasted",
+   "examples": {
+    "bad": [
+     {
+      "text": "Small diffs and clear task notes beat faster models every time.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "at": "2026-11-09T12:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Small diffs and clear task notes beat faster models, every time."
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "https://github.com/owner/some-long-repository-name-for-the-app",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "reply",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "reply",
+        "status": "live",
+        "at": "2026-11-10T12:00:00-08:00",
+        "at_precision": "exact",
+        "text": "https://github.com/owner/some-long-repository-name-for-the-app"
+       }
+      ]
+     },
+     {
+      "text": "What is the strangest bug an agent ever fixed for you?",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "X",
+        "account": "@acmenotes_demo",
+        "action": "post",
+        "status": "live",
+        "at": "2026-11-09T12:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Small diffs and clear task notes beat faster models, every time."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "question-ratio",
+   "type": "question-ratio",
+   "severity": "warn",
+   "last": 4,
+   "max": 3,
+   "applies": {
+    "kinds": [
+     "post"
+    ]
+   },
+   "message": "not every post needs a question; some are just for looks",
+   "src": "flow pacing: not every post needs a question",
+   "examples": {
+    "bad": [
+     {
+      "text": "What does your setup look like?",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "place": "notes-group",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Facebook group",
+        "account": "Acme Notes page",
+        "action": "post",
+        "status": "live",
+        "place": "notes-group",
+        "at": "2026-11-11T08:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Which agent do you trust most?"
+       },
+       {
+        "id": "h2",
+        "platform": "Facebook group",
+        "account": "Acme Notes page",
+        "action": "post",
+        "status": "live",
+        "place": "notes-group",
+        "at": "2026-11-11T09:00:00-08:00",
+        "at_precision": "exact",
+        "text": "What broke this week?"
+       },
+       {
+        "id": "h3",
+        "platform": "Facebook group",
+        "account": "Acme Notes page",
+        "action": "post",
+        "status": "live",
+        "place": "notes-group",
+        "at": "2026-11-11T10:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Tabs or spaces?"
+       }
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "What does your setup look like?",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "place": "notes-group",
+      "at": "2026-11-11T12:00:00-08:00",
+      "history": [
+       {
+        "id": "h1",
+        "platform": "Facebook group",
+        "account": "Acme Notes page",
+        "action": "post",
+        "status": "live",
+        "place": "notes-group",
+        "at": "2026-11-11T08:00:00-08:00",
+        "at_precision": "exact",
+        "text": "Shipped the new board today."
+       },
+       {
+        "id": "h2",
+        "platform": "Facebook group",
+        "account": "Acme Notes page",
+        "action": "post",
+        "status": "live",
+        "place": "notes-group",
+        "at": "2026-11-11T09:00:00-08:00",
+        "at_precision": "exact",
+        "text": "What broke this week?"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "facts-read",
+   "type": "ask",
+   "severity": "ask",
+   "applies": {
+    "promo": true
+   },
+   "message": "it is about the owner's app: which README, CHANGELOG or release did you read this session for every claim? (URL or commit)",
+   "src": "flow ground-rules: facts come from the source",
+   "examples": {
+    "bad": [
+     {
+      "text": "Acme Notes links notes with double brackets.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "project": "acme-notes"
+     }
+    ],
+    "good": [
+     {
+      "text": "Acme Notes links notes with double brackets.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "project": "acme-notes",
+      "ok": {
+       "facts-read": "README read this session"
+      }
+     },
+     {
+      "text": "Agents are getting better at reading diffs.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post"
+     }
+    ]
+   }
+  },
+  {
+   "id": "source-read",
+   "type": "ask",
+   "severity": "ask",
+   "applies": {
+    "recipes": [
+     "news-share"
+    ]
+   },
+   "message": "news share: the original source you read this session (URL), not a summary of it",
+   "src": "recipe news-share: the original source",
+   "examples": {
+    "bad": [
+     {
+      "text": "A new study on how teams review AI code.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "recipe": "news-share"
+     }
+    ],
+    "good": [
+     {
+      "text": "A new study on how teams review AI code.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "recipe": "news-share",
+      "ok": {
+       "source-read": "https://example.org/study (read in full)"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "news-screen",
+   "type": "ask",
+   "severity": "ask",
+   "applies": {
+    "recipes": [
+     "news-share"
+    ]
+   },
+   "message": "news share: say why it is not another company's launch or feature list and names no direct competitor",
+   "src": "flow ground-rules: no free ads",
+   "examples": {
+    "bad": [
+     {
+      "text": "A new study on how teams review AI code.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "recipe": "news-share"
+     }
+    ],
+    "good": [
+     {
+      "text": "A new study on how teams review AI code.",
+      "platform": "Facebook group",
+      "account": "Acme Notes page",
+      "action": "post",
+      "recipe": "news-share",
+      "ok": {
+       "news-screen": "a research finding, no product, no competitor, supports AI-built apps"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "media-qc",
+   "type": "ask",
+   "severity": "ask",
+   "applies": {
+    "media": true
+   },
+   "message": "what did the image checks in flow art find on each image or video?",
+   "src": "flow art: image checks",
+   "examples": {
+    "bad": [
+     {
+      "text": "New bench photo.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "media": [
+       "bench.jpg"
+      ]
+     }
+    ],
+    "good": [
+     {
+      "text": "New bench photo.",
+      "platform": "X",
+      "account": "@acmenotes_demo",
+      "action": "post",
+      "media": [
+       "bench.jpg"
+      ],
+      "ok": {
+       "media-qc": "image-qc: EXIF stripped, crop, no faces"
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

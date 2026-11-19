@@ -1,0 +1,69 @@
+{
+ "name": "Audit log",
+ "group": "Start here",
+ "icon": "clock",
+ "summary": "Every post, reply and comment goes in the audit log right after it goes out, then gets checked live.",
+ "order": 3,
+ "nodes": [
+  {
+   "id": "audit-start",
+   "kind": "start",
+   "title": "Something went out",
+   "sub": "A post, reply, comment, article or video",
+   "body": "Log it before the next send.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "audit-log",
+   "part": "part-log",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "audit-live",
+   "part": "part-verify-live",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "audit-tools",
+   "kind": "tool",
+   "title": "Look things up",
+   "sub": "today, recent, gap, search",
+   "body": "- `python playbook/audit.py today`: what went out today, against the caps.\n- `python playbook/audit.py gap --platform X --account @acmenotes_demo --action reply`: READY or WAIT.\n- `python playbook/audit.py search <words>`: was this said before?",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "audit-done",
+   "kind": "output",
+   "title": "Logged and verified",
+   "sub": "The History panel on the canvas shows it",
+   "x": 1020,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "audit-start",
+   "to": "audit-log",
+   "type": "flow"
+  },
+  {
+   "from": "audit-log",
+   "to": "audit-live",
+   "type": "flow"
+  },
+  {
+   "from": "audit-live",
+   "to": "audit-done",
+   "type": "flow"
+  },
+  {
+   "from": "audit-tools",
+   "to": "audit-log",
+   "type": "attach"
+  }
+ ]
+}

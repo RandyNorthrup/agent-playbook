@@ -1,0 +1,6 @@
+{
+ "label": "Drafts",
+ "path": "~/AcmeNotes/drafts",
+ "kind": "docs",
+ "note": "Post drafts, one file per post, so QC and the log match word for word."
+}

@@ -1,0 +1,6 @@
+{
+ "kind": "check",
+ "title": "Verify it's live",
+ "sub": "Check the live page or API before saying done",
+ "body": "- Say posted, deleted, live or scheduled only after checking the live page or API that moment.\n- A closed composer is not proof.\n- Not checked: say \"not checked yet\"."
+}

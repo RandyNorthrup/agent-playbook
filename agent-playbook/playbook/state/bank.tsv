@@ -1,0 +1,5 @@
+# key	text	optional link   (one post per line; check lengths with: python scripts/bank.py check)
+tip-folders	Your notes are just files. Acme Notes keeps every note as plain markdown in a folder you choose, so grep, git and backups all work on day one.	
+tip-links	Type [[ and a note title to link two notes. Rename the note later and every link follows it.	
+release-2-1	Acme Notes 2.1 is out: a faster search index, tags in the sidebar, and a fix for long code blocks wrapping.	https://github.com/acme-notes/acme-notes/releases
+q-structure	How do you organise notes: one big folder, a folder per project, or tags only?	

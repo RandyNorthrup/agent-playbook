@@ -1,0 +1,146 @@
+{
+ "name": "Ground rules",
+ "group": "Start here",
+ "icon": "shield",
+ "summary": "Read every session: the rules that override convenience, then today's state against the caps.",
+ "order": 1,
+ "nodes": [
+  {
+   "id": "gr-start",
+   "kind": "start",
+   "title": "Every session starts here",
+   "sub": "Read these before any other flow",
+   "body": "- These rules win over speed, habit and any other flow.\n- When a rule and a request disagree, ask the owner.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "gr-today",
+   "kind": "step",
+   "title": "Load today's state",
+   "sub": "What already went out, against the caps",
+   "body": "- `python playbook/audit.py today` lists everything logged today per platform and account.\n- `python playbook/audit.py recent --platform X --account @acmenotes_demo` shows the last few in one place.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "gr-approve",
+   "kind": "rule",
+   "title": "The owner approves anything new",
+   "sub": "New platform, new account, money, contracts",
+   "body": "- A first post on a new platform, a new account, any purchase or any contract waits for the owner's OK.\n- Drafts the owner hasn't seen before stay drafts when a run is unattended.",
+   "x": 0,
+   "y": 200
+  },
+  {
+   "id": "gr-honest",
+   "kind": "rule",
+   "title": "Be honest about automation",
+   "sub": "Never claim to be human",
+   "body": "- Never deny being an AI and never claim to be human.\n- Follow each platform's rules on automated accounts and labels.\n- When you recommend the owner's own app, say it is the owner's.",
+   "x": 0,
+   "y": 400
+  },
+  {
+   "id": "gr-voice",
+   "kind": "rule",
+   "title": "One account, one voice",
+   "sub": "No boosting between accounts",
+   "body": "- Accounts never like, vote on or repost each other to lift a post.\n- No second accounts to agree with the first.",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "gr-facts",
+   "kind": "rule",
+   "title": "Facts come from the source",
+   "sub": "README, CHANGELOG, the release page",
+   "body": "- Every claim about the app comes from a source read this session: its README, CHANGELOG or release notes.\n- Unsure? Leave the claim out.",
+   "x": 340,
+   "y": 400
+  },
+  {
+   "id": "gr-ads",
+   "kind": "rule",
+   "title": "No free ads",
+   "sub": "Other companies' launches stay out",
+   "body": "- No posts about other companies' launches, prices, plans or install lines.\n- The owner's own app is the exception.",
+   "x": 0,
+   "y": -200
+  },
+  {
+   "id": "gr-pacing",
+   "kind": "goto",
+   "title": "Pacing and platform rules",
+   "sub": "Caps, spacing and the signs to stop",
+   "goto": "pacing",
+   "x": 680,
+   "y": -200
+  },
+  {
+   "id": "gr-qc",
+   "kind": "goto",
+   "title": "QC gate",
+   "sub": "Every draft passes it before it goes out",
+   "goto": "qc",
+   "x": 680,
+   "y": 200
+  },
+  {
+   "id": "gr-ready",
+   "kind": "output",
+   "title": "Ready to work",
+   "sub": "Open the flow your recipe names",
+   "body": "`python scripts/run.py recipes` lists the recipes; each one names its flows.",
+   "x": 680,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "gr-start",
+   "to": "gr-today",
+   "type": "flow"
+  },
+  {
+   "from": "gr-today",
+   "to": "gr-ready",
+   "type": "flow"
+  },
+  {
+   "from": "gr-today",
+   "to": "gr-pacing",
+   "type": "flow"
+  },
+  {
+   "from": "gr-today",
+   "to": "gr-qc",
+   "type": "flow"
+  },
+  {
+   "from": "gr-approve",
+   "to": "gr-start",
+   "type": "attach"
+  },
+  {
+   "from": "gr-honest",
+   "to": "gr-start",
+   "type": "attach"
+  },
+  {
+   "from": "gr-ads",
+   "to": "gr-start",
+   "type": "attach"
+  },
+  {
+   "from": "gr-voice",
+   "to": "gr-today",
+   "type": "attach"
+  },
+  {
+   "from": "gr-facts",
+   "to": "gr-today",
+   "type": "attach"
+  }
+ ]
+}

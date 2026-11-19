@@ -1,0 +1,128 @@
+{
+ "name": "QC gate",
+ "group": "Rules & QC",
+ "icon": "check",
+ "summary": "Every draft passes qc.py before it is sent: fix a BLOCK, answer an ASK with evidence, report a WARN.",
+ "order": 1,
+ "nodes": [
+  {
+   "id": "qc-start",
+   "kind": "start",
+   "title": "Draft ready",
+   "sub": "The exact words, in a file",
+   "body": "Write the draft to a file so the receipt and the log match it word for word.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "qc-check",
+   "part": "part-qc-check",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "qc-result",
+   "kind": "decision",
+   "title": "What did it say?",
+   "sub": "One verdict per filter",
+   "body": "- **BLOCK:** the draft can't go out.\n- **ASK:** a judgment only you can make: answer it.\n- **PASS or WARN:** it can go.",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "qc-fix",
+   "kind": "step",
+   "title": "Fix and check again",
+   "sub": "Never argue with a BLOCK",
+   "body": "Rewrite the draft and run the same check again.",
+   "x": 1020,
+   "y": -200
+  },
+  {
+   "id": "qc-ask",
+   "kind": "step",
+   "title": "Answer with evidence",
+   "sub": "--ok <id>=\"what you read, where\"",
+   "body": "Re-run with `--ok facts-read=\"README section Install, read this session\"` (one per ASK).",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "qc-gap",
+   "kind": "step",
+   "title": "Wait for the gap",
+   "sub": "audit.py gap right before sending",
+   "body": "`python playbook/audit.py gap --platform <P> --account <A> --action <reply|post>`: WAIT means wait.",
+   "x": 1020,
+   "y": 200
+  },
+  {
+   "id": "qc-filters",
+   "kind": "tool",
+   "title": "Which filters apply",
+   "sub": "qc.py filters and explain",
+   "body": "- `python playbook/qc.py filters --platform X --action reply`.\n- `python playbook/qc.py explain links-in-reply` prints the rule, its source and its examples.",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "qc-done",
+   "kind": "output",
+   "title": "Cleared to send",
+   "sub": "The receipt is saved; audit.py add will accept these words",
+   "x": 1360,
+   "y": 200
+  }
+ ],
+ "edges": [
+  {
+   "from": "qc-start",
+   "to": "qc-check",
+   "type": "flow"
+  },
+  {
+   "from": "qc-check",
+   "to": "qc-result",
+   "type": "flow"
+  },
+  {
+   "from": "qc-result",
+   "to": "qc-fix",
+   "type": "flow",
+   "label": "BLOCK"
+  },
+  {
+   "from": "qc-result",
+   "to": "qc-ask",
+   "type": "flow",
+   "label": "ASK"
+  },
+  {
+   "from": "qc-result",
+   "to": "qc-gap",
+   "type": "flow",
+   "label": "PASS"
+  },
+  {
+   "from": "qc-fix",
+   "to": "qc-check",
+   "type": "flow"
+  },
+  {
+   "from": "qc-ask",
+   "to": "qc-gap",
+   "type": "flow"
+  },
+  {
+   "from": "qc-gap",
+   "to": "qc-done",
+   "type": "flow",
+   "label": "READY"
+  },
+  {
+   "from": "qc-filters",
+   "to": "qc-check",
+   "type": "attach"
+  }
+ ]
+}

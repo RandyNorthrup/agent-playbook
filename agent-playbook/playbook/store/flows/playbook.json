@@ -1,0 +1,155 @@
+{
+ "name": "Change the playbook",
+ "group": "Start here",
+ "icon": "map",
+ "summary": "Where a lesson goes (QC filter, flow, part or recipe), how to save it, and the check that must pass.",
+ "order": 4,
+ "nodes": [
+  {
+   "id": "pb-start",
+   "kind": "start",
+   "title": "A lesson to keep",
+   "sub": "The owner corrected something, or something broke",
+   "body": "A lasting lesson goes into the playbook, never into agent memory.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "pb-where",
+   "kind": "decision",
+   "title": "Where does it go?",
+   "sub": "Pick the piece that owns it",
+   "body": "- **a mistake a script can catch:** a QC filter.\n- **a rule for one job:** that job's flow.\n- **a step several flows share:** a part.\n- **a new kind of job:** a recipe.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "pb-filter",
+   "kind": "step",
+   "title": "Add a QC filter",
+   "sub": "With the text that slipped through",
+   "body": "- Copy the closest filter in `playbook/qc/filters.json`, give it a new id and its src.\n- The text that slipped through is its bad example; add a good one.\n- `python playbook/qc.py selftest`.",
+   "x": 680,
+   "y": -300
+  },
+  {
+   "id": "pb-flow",
+   "kind": "step",
+   "title": "Edit the flow",
+   "sub": "On the canvas or with pb.py put",
+   "body": "- Canvas: double-click the node, edit, save.\n- Agent: `python playbook/pb.py show <flow> --json > f.json`, edit the document inside it, then `python playbook/pb.py put flows <flow> f.json`: the revision in the file is the base, so a canvas edit made meanwhile is refused, not overwritten.",
+   "x": 680,
+   "y": -100
+  },
+  {
+   "id": "pb-part",
+   "kind": "step",
+   "title": "Make it a part",
+   "sub": "Written once, followed everywhere",
+   "body": "On the canvas: **Save as part** on the step, then **From the parts library** in every other flow that needs it.",
+   "x": 680,
+   "y": 100
+  },
+  {
+   "id": "pb-recipe",
+   "kind": "step",
+   "title": "Add a recipe",
+   "sub": "A checklist for a new kind of job",
+   "body": "Add it to `playbook/state/recipes.json`: a title, when to use it, its flows, and steps that each name a flow or part.",
+   "x": 680,
+   "y": 300
+  },
+  {
+   "id": "pb-hand",
+   "kind": "rule",
+   "title": "Never edit store files by hand",
+   "sub": "Use the canvas or pb.py",
+   "body": "- The canvas and `pb.py` keep a version of every change and refuse a stale save.\n- A hand edit skips both.",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "pb-check",
+   "kind": "check",
+   "title": "Check the playbook",
+   "sub": "Zero errors, zero warnings",
+   "body": "`python playbook/pb.py check --strict` runs the schema, the lint rules, the recipe checks and the QC selftest.",
+   "checks": [
+    "pb.py check --strict exits 0",
+    "The change shows in pb.py changes"
+   ],
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "pb-done",
+   "kind": "output",
+   "title": "Lesson kept",
+   "sub": "The next run follows it",
+   "x": 1360,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "pb-start",
+   "to": "pb-where",
+   "type": "flow"
+  },
+  {
+   "from": "pb-where",
+   "to": "pb-filter",
+   "type": "flow",
+   "label": "script can catch"
+  },
+  {
+   "from": "pb-where",
+   "to": "pb-flow",
+   "type": "flow",
+   "label": "one job"
+  },
+  {
+   "from": "pb-where",
+   "to": "pb-part",
+   "type": "flow",
+   "label": "shared step"
+  },
+  {
+   "from": "pb-where",
+   "to": "pb-recipe",
+   "type": "flow",
+   "label": "new job"
+  },
+  {
+   "from": "pb-filter",
+   "to": "pb-check",
+   "type": "flow"
+  },
+  {
+   "from": "pb-flow",
+   "to": "pb-check",
+   "type": "flow"
+  },
+  {
+   "from": "pb-part",
+   "to": "pb-check",
+   "type": "flow"
+  },
+  {
+   "from": "pb-recipe",
+   "to": "pb-check",
+   "type": "flow"
+  },
+  {
+   "from": "pb-check",
+   "to": "pb-done",
+   "type": "flow",
+   "label": "pass"
+  },
+  {
+   "from": "pb-hand",
+   "to": "pb-where",
+   "type": "attach"
+  }
+ ]
+}

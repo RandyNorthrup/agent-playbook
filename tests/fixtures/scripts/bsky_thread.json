@@ -1,0 +1,120 @@
+{
+ "thread": {
+  "$type": "app.bsky.feed.defs#threadViewPost",
+  "post": {
+   "uri": "at://did:plc:owner123/app.bsky.feed.post/3own001",
+   "cid": "bafy3own001",
+   "author": {
+    "did": "did:plc:owner123",
+    "handle": "Owner.Example",
+    "displayName": "Owner"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "text": "The owner's post",
+    "createdAt": "2026-11-09T06:00:00.000Z"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "indexedAt": "2026-11-09T06:00:00.000Z"
+  },
+  "replies": [
+   {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+     "uri": "at://did:plc:asker/app.bsky.feed.post/3ask001",
+     "cid": "bafy3ask001",
+     "author": {
+      "did": "did:plc:asker",
+      "handle": "asker.example",
+      "displayName": "asker"
+     },
+     "record": {
+      "$type": "app.bsky.feed.post",
+      "text": "How does it handle updates?",
+      "createdAt": "2026-11-09T06:30:00.000Z"
+     },
+     "replyCount": 0,
+     "repostCount": 0,
+     "likeCount": 0,
+     "indexedAt": "2026-11-09T06:30:00.000Z"
+    },
+    "replies": [
+     {
+      "$type": "app.bsky.feed.defs#threadViewPost",
+      "post": {
+       "uri": "at://did:plc:owner123/app.bsky.feed.post/3own002",
+       "cid": "bafy3own002",
+       "author": {
+        "did": "did:plc:owner123",
+        "handle": "owner.example",
+        "displayName": "owner"
+       },
+       "record": {
+        "$type": "app.bsky.feed.post",
+        "text": "It keeps them on.",
+        "createdAt": "2026-11-09T06:40:00.000Z"
+       },
+       "replyCount": 0,
+       "repostCount": 0,
+       "likeCount": 0,
+       "indexedAt": "2026-11-09T06:40:00.000Z"
+      },
+      "replies": [
+       {
+        "$type": "app.bsky.feed.defs#threadViewPost",
+        "post": {
+         "uri": "at://did:plc:asker/app.bsky.feed.post/3ask002",
+         "cid": "bafy3ask002",
+         "author": {
+          "did": "did:plc:asker",
+          "handle": "asker.example",
+          "displayName": "asker"
+         },
+         "record": {
+          "$type": "app.bsky.feed.post",
+          "text": "Nice, and on Arm?",
+          "createdAt": "2026-11-09T06:50:00.000Z"
+         },
+         "replyCount": 0,
+         "repostCount": 0,
+         "likeCount": 0,
+         "indexedAt": "2026-11-09T06:50:00.000Z"
+        },
+        "replies": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "$type": "app.bsky.feed.defs#threadViewPost",
+    "post": {
+     "uri": "at://did:plc:second/app.bsky.feed.post/3sec001",
+     "cid": "bafy3sec001",
+     "author": {
+      "did": "did:plc:second",
+      "handle": "second.example",
+      "displayName": "second"
+     },
+     "record": {
+      "$type": "app.bsky.feed.post",
+      "text": "Following this.\nLooks useful",
+      "createdAt": "2026-11-09T07:00:00.000Z"
+     },
+     "replyCount": 0,
+     "repostCount": 0,
+     "likeCount": 0,
+     "indexedAt": "2026-11-09T07:00:00.000Z"
+    },
+    "replies": []
+   },
+   {
+    "$type": "app.bsky.feed.defs#blockedPost",
+    "uri": "at://did:plc:x/app.bsky.feed.post/3blk",
+    "blocked": true
+   }
+  ]
+ }
+}

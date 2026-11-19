@@ -1,0 +1,46 @@
+{
+ "thread": {
+  "$type": "app.bsky.feed.defs#threadViewPost",
+  "post": {
+   "uri": "at://did:plc:gated/app.bsky.feed.post/3gat001",
+   "cid": "bafy3gat001",
+   "author": {
+    "did": "did:plc:gated",
+    "handle": "gated.example",
+    "displayName": "gated"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "text": "Replies limited",
+    "createdAt": "2026-11-09T08:00:00.000Z"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "indexedAt": "2026-11-09T08:00:00.000Z",
+   "threadgate": {
+    "uri": "at://did:plc:gated/app.bsky.feed.threadgate/3gat001",
+    "cid": "bafytg3gat001",
+    "record": {
+     "$type": "app.bsky.feed.threadgate",
+     "post": "at://did:plc:gated/app.bsky.feed.post/3gat001",
+     "allow": [],
+     "createdAt": "2026-11-09T08:00:00.000Z"
+    },
+    "lists": []
+   }
+  },
+  "replies": []
+ },
+ "threadgate": {
+  "uri": "at://did:plc:gated/app.bsky.feed.threadgate/3gat001",
+  "cid": "bafytg3gat001",
+  "record": {
+   "$type": "app.bsky.feed.threadgate",
+   "post": "at://did:plc:gated/app.bsky.feed.post/3gat001",
+   "allow": [],
+   "createdAt": "2026-11-09T08:00:00.000Z"
+  },
+  "lists": []
+ }
+}

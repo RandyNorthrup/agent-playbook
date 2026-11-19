@@ -1,0 +1,123 @@
+{
+ "about": "Data the QC filters in filters.json read. Patterns are Python regular expressions, matched without regard to case unless they say (?-i:...); ignore entries are names, matched as whole names. Add a name or a phrase here when the owner gives a new one, with the flow it came from in the entry's why. Never put secrets or personal details here.",
+ "projects": {
+  "acme-notes": {
+   "names": [
+    "\\bAcme Notes\\b",
+    "acme-notes",
+    "\\bacmenotes\\b"
+   ]
+  }
+ },
+ "ignore": [
+  {
+   "pattern": "Pat Example",
+   "why": "the owner asked: never reply to this account"
+  }
+ ],
+ "competitors": [
+  {
+   "pattern": "\\bRivalPad\\b",
+   "rival_of": "acme-notes",
+   "why": "a direct competitor of Acme Notes"
+  },
+  {
+   "pattern": "\\bNoteForge\\b",
+   "rival_of": "acme-notes",
+   "why": "a direct competitor of Acme Notes"
+  }
+ ],
+ "brands": [
+  {
+   "pattern": "\\bGlobex\\b",
+   "why": "another company: no free ads"
+  },
+  {
+   "pattern": "\\bInitech\\b",
+   "why": "another company: no free ads"
+  }
+ ],
+ "ad_copy": [
+  {
+   "pattern": "\\$\\s?\\d[\\d,.]*\\s*(/|per\\s)\\s*(mo|month|yr|year|seat|user)\\b",
+   "why": "a price"
+  },
+  {
+   "pattern": "\\$\\d[\\d,]*\\.\\d\\d\\b|\\(\\$\\d[\\d,]*\\)",
+   "why": "a price"
+  },
+  {
+   "pattern": "\\bfree (tier|plan|trial)\\b",
+   "why": "plan or pricing copy"
+  },
+  {
+   "pattern": "\\b\\d{1,2}% off\\b|\\b(promo|discount|coupon) code\\b",
+   "why": "a discount"
+  },
+  {
+   "pattern": "\\b(npm|pnpm|yarn|bun) (i|install|add)\\b|\\bpip3? install\\b|\\bbrew install\\b|\\bwinget install\\b|\\bone-line install\\b|\\bnpx \\S+@latest\\b",
+   "why": "an install line"
+  },
+  {
+   "pattern": "\\b(download|grab|get) it (now|today|here)\\b|\\bjoin the waitlist\\b|\\bget early access\\b",
+   "why": "a call to buy or sign up"
+  },
+  {
+   "pattern": "\\bavailable (now )?(on|in) the (App|Play|Chrome Web|Microsoft) Store\\b",
+   "why": "store copy"
+  }
+ ],
+ "launch_wording": [
+  {
+   "pattern": "\\b(just )?(launch(ed|es)|unveil(s|ed)|introduc(es|ed)|rolls? out|rolled out|debut(s|ed)?|announc(es|ed))\\b|\\b(just|has) shipped\\b"
+  },
+  {
+   "pattern": "(?-i:\\b[A-Z][\\w.]*[a-z][\\w.]*('s)? (just )?(adds|added|launche[sd]|ships|shipped|rolls out|rolled out|unveil(s|ed)|now (supports?|lets|does|has|offers|runs|can))\\b)"
+  },
+  {
+   "pattern": "\\bnow (supports?|available|lets|offers|comes with)\\b|\\bships with\\b|\\bhas its own \\w+ now\\b"
+  },
+  {
+   "pattern": "\\b(adds|added) (support for|a new|new|the ability)\\b"
+  },
+  {
+   "pattern": "https?://\\S*(/changelog|/release-notes|/releases/|/whats-new|/product-updates)"
+  },
+  {
+   "pattern": "\\b(is|are) (out|live) now\\b|\\b\\d+(\\.\\d+)+ is out\\b|\\bis out:"
+  },
+  {
+   "pattern": "\\bnew (features?|release|version|update|presets?|model|keyboard|keypad|app|tool|platform)\\b"
+  }
+ ],
+ "ai_denial": [
+  {
+   "pattern": "\\bI(?:'| a)?m (not an? (bot|AI)\\b|a (real )?(person|human)\\b|(just )?human\\b)"
+  },
+  {
+   "pattern": "\\bnot an? (bot|AI)\\b"
+  },
+  {
+   "pattern": "\\b(100% )?human[- ](written|made)\\b|\\bno AI (was )?(used|involved)\\b|\\b(real|actual) human (here|behind)\\b"
+  }
+ ],
+ "never_say": {
+  "_all": [
+   {
+    "pattern": "\\bguaranteed?\\b",
+    "why": "no guarantees in posts or replies (flow ground-rules)",
+    "severity": "warn"
+   }
+  ],
+  "acme-notes": [
+   {
+    "pattern": "\\b(syncs?|sync(ing|ed)?) (in real ?time|instantly|live)\\b",
+    "why": "sync runs on a timer, not live (flow acme-notes)"
+   },
+   {
+    "pattern": "\\bend-to-end encrypt",
+    "why": "notes are plain files; no encryption claims (flow acme-notes)"
+   }
+  ]
+ }
+}

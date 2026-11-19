@@ -1,0 +1,12 @@
+{
+ "name": "Parchment",
+ "style": "Sepia fountain-pen illustration on a yellowed page from an old bound book, with an uneven deckled edge, a faint printed rule along the top and a scattering of tiny age spots, fine flexible nib lines with stippling and light cross-hatching for shadow. A muted teal watercolour wash is used ONLY on the guide character's waistcoat and at most one or two small accents in a scene; everything else is sepia ink on the old paper, and wood, leather, metal, food, cloth and skin are all shaded with hatching rather than coloured. People from the past are drawn semi-realistically in sepia ink with adult proportions and real faces (eyelids, noses, lips), full heads of hair or period headwear, never cartoonish, childlike or dot-eyed; only the guide is a simple cartoon, and no one else shares the guide's top hat, monocle or teal waistcoat. Every skin tone is shown with lighter or denser hatching and complete features, never a solid filled face. A person who returns in later scenes keeps the same look; buildings, tools, clothing, uniforms, flags and insignia match the exact period and place of the story; figures never overlap or fuse together.",
+ "character": "The guide character (Quill) must match the attached character sheet exactly: small egg-shaped head with two dot eyes and a short curled moustache, a single round monocle, a tall battered top hat, a teal waistcoat with a pocket-watch chain, simple thin-line body.",
+ "scene_count": [
+  55,
+  65
+ ],
+ "render_flags": [
+  "--pad-solid"
+ ]
+}

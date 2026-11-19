@@ -1,0 +1,94 @@
+{
+ "name": "Acme Notes facts",
+ "group": "Projects & promo",
+ "icon": "box",
+ "summary": "The demo app's facts: what it does, where the facts live, and what never to say about it.",
+ "order": 2,
+ "nodes": [
+  {
+   "id": "an-start",
+   "kind": "start",
+   "title": "Writing about Acme Notes",
+   "sub": "Any post, reply or answer that names it",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "an-what",
+   "kind": "step",
+   "title": "What it is",
+   "sub": "One line, from the README",
+   "body": "- A free, open-source markdown notes app that keeps notes as plain files in a folder.\n- Repo, README and CHANGELOG: the links on this node.",
+   "links": [
+    {
+     "label": "Repository",
+     "url": "https://github.com/acme-notes/acme-notes"
+    }
+   ],
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "an-never",
+   "kind": "rule",
+   "title": "Never say",
+   "sub": "Claims the app can't back",
+   "body": "- No real-time sync: sync runs on a timer.\n- No end-to-end encryption claims: notes are plain files.\n- `playbook/qc/lists.json` never_say holds these as patterns.",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "an-rivals",
+   "kind": "rule",
+   "title": "Competitors",
+   "sub": "RivalPad and NoteForge",
+   "body": "- Never named in an original post.\n- In a reply: only a sourced, neutral, brief claim, leading with what Acme Notes does.",
+   "x": 0,
+   "y": 200
+  },
+  {
+   "id": "an-done",
+   "kind": "output",
+   "title": "Facts checked",
+   "sub": "Every claim traced to a source",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "an-release",
+   "kind": "goto",
+   "title": "Release announcement",
+   "sub": "When a new version ships",
+   "goto": "release",
+   "x": 680,
+   "y": 200
+  }
+ ],
+ "edges": [
+  {
+   "from": "an-start",
+   "to": "an-what",
+   "type": "flow"
+  },
+  {
+   "from": "an-what",
+   "to": "an-done",
+   "type": "flow"
+  },
+  {
+   "from": "an-what",
+   "to": "an-release",
+   "type": "flow"
+  },
+  {
+   "from": "an-never",
+   "to": "an-what",
+   "type": "attach"
+  },
+  {
+   "from": "an-rivals",
+   "to": "an-start",
+   "type": "attach"
+  }
+ ]
+}

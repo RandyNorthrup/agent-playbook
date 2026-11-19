@@ -1,0 +1,140 @@
+{
+ "name": "Release announcement",
+ "group": "Projects & promo",
+ "icon": "rocket",
+ "summary": "A new release of the owner's app: read the notes, take real screenshots, then one fresh post per platform.",
+ "order": 1,
+ "nodes": [
+  {
+   "id": "rel-start",
+   "kind": "start",
+   "title": "A new release is out",
+   "sub": "Tagged and published on GitHub",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "rel-read",
+   "kind": "step",
+   "title": "Read the release notes",
+   "sub": "Every claim comes from here",
+   "body": "- `gh release view --repo acme-notes/acme-notes` prints the latest notes.\n- Note the two or three changes a user would notice.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "rel-facts",
+   "kind": "goto",
+   "title": "Acme Notes facts",
+   "sub": "What may and may not be said",
+   "goto": "acme-notes",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "rel-shots",
+   "kind": "step",
+   "title": "Real screenshots",
+   "sub": "From the app, never mock-ups",
+   "body": "Capture the changed screens at 2x; crop to the change.",
+   "folders": [
+    "screenshots"
+   ],
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "rel-write",
+   "kind": "step",
+   "title": "One post per platform",
+   "sub": "Rewritten, never pasted",
+   "body": "- Rewrite the hook and length per platform.\n- One link, to the release page.",
+   "folders": [
+    "drafts"
+   ],
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "rel-where",
+   "kind": "decision",
+   "title": "Where does it go?",
+   "sub": "Every platform with an account",
+   "body": "Each platform's own flow does the posting.",
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "rel-x",
+   "kind": "goto",
+   "title": "X: originals",
+   "sub": "The release post on X",
+   "goto": "x-post",
+   "x": 1700,
+   "y": -200
+  },
+  {
+   "id": "rel-bsky",
+   "kind": "goto",
+   "title": "Bluesky",
+   "sub": "The release post on Bluesky",
+   "goto": "bluesky",
+   "x": 1700,
+   "y": 0
+  },
+  {
+   "id": "rel-art",
+   "kind": "goto",
+   "title": "Art methods",
+   "sub": "A banner or a card for the release",
+   "goto": "art",
+   "x": 1700,
+   "y": 200
+  }
+ ],
+ "edges": [
+  {
+   "from": "rel-start",
+   "to": "rel-read",
+   "type": "flow"
+  },
+  {
+   "from": "rel-read",
+   "to": "rel-shots",
+   "type": "flow"
+  },
+  {
+   "from": "rel-read",
+   "to": "rel-facts",
+   "type": "flow"
+  },
+  {
+   "from": "rel-shots",
+   "to": "rel-write",
+   "type": "flow"
+  },
+  {
+   "from": "rel-write",
+   "to": "rel-where",
+   "type": "flow"
+  },
+  {
+   "from": "rel-where",
+   "to": "rel-x",
+   "type": "flow",
+   "label": "X"
+  },
+  {
+   "from": "rel-where",
+   "to": "rel-bsky",
+   "type": "flow",
+   "label": "Bluesky"
+  },
+  {
+   "from": "rel-where",
+   "to": "rel-art",
+   "type": "flow",
+   "label": "art"
+  }
+ ]
+}

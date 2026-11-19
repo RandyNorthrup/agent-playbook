@@ -1,0 +1,12 @@
+{
+ "__typename": "Tweet",
+ "id_str": "1900000000000000001",
+ "text": "Shipping the new build today.",
+ "lang": "en",
+ "favorite_count": 120,
+ "user": {
+  "id_str": "42",
+  "name": "Example Dev",
+  "screen_name": "ExampleDev"
+ }
+}

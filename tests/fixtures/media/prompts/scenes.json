@@ -1,0 +1,22 @@
+[
+ {
+  "id": 1,
+  "prompt": "A paper boat drifts across a puddle beside a kerb, with two small ripples behind it."
+ },
+ {
+  "id": 2,
+  "prompt": "A wall clock with both hands pointing straight up, above an empty desk.",
+  "label": "12 SECONDS"
+ },
+ {
+  "id": 3,
+  "prompt": "The guide points at a tall stack of books on a small table and raises one eyebrow.",
+  "character": true
+ },
+ {
+  "id": 4,
+  "prompt": "The guide holds up a sign on a stick and smiles at the viewer.",
+  "character": true,
+  "label": "TRY IT"
+ }
+]

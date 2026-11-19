@@ -1,0 +1,153 @@
+{
+ "name": "Art methods",
+ "group": "Art & thumbnails",
+ "icon": "palette",
+ "summary": "Pick the method by the job: real screenshots, an HTML template, or a generated image; then the image checks.",
+ "order": 1,
+ "nodes": [
+  {
+   "id": "art-start",
+   "kind": "start",
+   "title": "A job needs art",
+   "sub": "Post, banner, card or carousel",
+   "body": "- Reuse before making anything new: look in the art folder first.\n- Product posts use real material; generated art only supports.",
+   "folders": [
+    "art-library"
+   ],
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "art-pick",
+   "kind": "decision",
+   "title": "What is it for?",
+   "sub": "The job decides the method",
+   "body": "- **product post:** real screenshots.\n- **banner or card:** an HTML template rendered by Chrome.\n- **background or key art:** a generated image.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "art-shots",
+   "kind": "step",
+   "title": "Real screenshots",
+   "sub": "From the app itself",
+   "body": "Use the screenshots folder; never a generated imitation of the app.",
+   "folders": [
+    "screenshots"
+   ],
+   "x": 680,
+   "y": -200
+  },
+  {
+   "id": "art-html",
+   "kind": "step",
+   "title": "Render an HTML template",
+   "sub": "Exact text, exact size",
+   "body": "`python scripts/render_carousel.py --html templates/banner_li.html --name banner --count 1 --width 1584 --height 396 --out <dir>`",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "art-gen",
+   "kind": "step",
+   "title": "Generate the image",
+   "sub": "Codex image generation, prompt saved beside it",
+   "body": "- `python media/image_gen.py \"PROMPT\" out.png --aspect 16:9`.\n- Prompts in ASCII; no text, logos or real people in the image: add text in code.",
+   "x": 680,
+   "y": 200
+  },
+  {
+   "id": "art-quota",
+   "kind": "gotcha",
+   "title": "Check the quota first",
+   "sub": "Before any batch",
+   "body": "`python media/quota.py` reads the weekly Codex limit; exit 1 means no batch generation.",
+   "x": 680,
+   "y": 400
+  },
+  {
+   "id": "art-check",
+   "kind": "check",
+   "title": "Image checks",
+   "sub": "Before anything is used",
+   "body": "Look at the result at full size before it goes anywhere.",
+   "checks": [
+    "Text is spelled right and inside the safe area",
+    "No warped hands, faces or logos",
+    "Right size and under the platform's file limit"
+   ],
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "art-exif",
+   "part": "part-exif",
+   "x": 1020,
+   "y": 200
+  },
+  {
+   "id": "art-done",
+   "kind": "output",
+   "title": "Art filed",
+   "sub": "Saved with its prompt or source",
+   "x": 1360,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "art-start",
+   "to": "art-pick",
+   "type": "flow"
+  },
+  {
+   "from": "art-pick",
+   "to": "art-shots",
+   "type": "flow",
+   "label": "product post"
+  },
+  {
+   "from": "art-pick",
+   "to": "art-html",
+   "type": "flow",
+   "label": "banner or card"
+  },
+  {
+   "from": "art-pick",
+   "to": "art-gen",
+   "type": "flow",
+   "label": "key art"
+  },
+  {
+   "from": "art-shots",
+   "to": "art-check",
+   "type": "flow"
+  },
+  {
+   "from": "art-html",
+   "to": "art-check",
+   "type": "flow"
+  },
+  {
+   "from": "art-gen",
+   "to": "art-check",
+   "type": "flow"
+  },
+  {
+   "from": "art-check",
+   "to": "art-done",
+   "type": "flow",
+   "label": "pass"
+  },
+  {
+   "from": "art-quota",
+   "to": "art-gen",
+   "type": "attach"
+  },
+  {
+   "from": "art-exif",
+   "to": "art-check",
+   "type": "attach"
+  }
+ ]
+}

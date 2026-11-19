@@ -1,0 +1,20 @@
+# scratch
+work/
+*.local.*
+# generated
+__pycache__/
+*.pyc
+details.json
+.doctor_probe.txt
+*.png
+!docs/**/*.png
+# playbook: local to one machine (trash, the view-only export, change history, server log, locks)
+agent-playbook/playbook/store/.trash/
+agent-playbook/playbook/store.json
+agent-playbook/playbook/store/**/.*.tmp
+agent-playbook/playbook/history/
+agent-playbook/playbook/server.log*
+agent-playbook/playbook/**/*.lock
+agent-playbook/playbook/state/runs/
+# QC receipts: local to one machine
+agent-playbook/playbook/audit/qc.jsonl

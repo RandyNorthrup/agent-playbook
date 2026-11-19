@@ -1,0 +1,88 @@
+{
+ "name": "X",
+ "group": "Platforms",
+ "icon": "x",
+ "summary": "X hub: the account, then the reply pass or an original.",
+ "order": 1,
+ "nodes": [
+  {
+   "id": "x-start",
+   "kind": "start",
+   "title": "X work",
+   "sub": "Signed in as the right account",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "x-acct",
+   "kind": "account",
+   "title": "@acmenotes_demo",
+   "sub": "The app's account",
+   "account": "x-acme",
+   "x": 340,
+   "y": 200
+  },
+  {
+   "id": "x-pick",
+   "kind": "decision",
+   "title": "Replies or an original?",
+   "sub": "Replies first",
+   "body": "- **replies:** everyone who talked to the account.\n- **original:** one post from the post bank.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "x-reply-go",
+   "kind": "goto",
+   "title": "X: replies",
+   "sub": "The reply pass",
+   "goto": "x-reply",
+   "x": 680,
+   "y": -100
+  },
+  {
+   "id": "x-post-go",
+   "kind": "goto",
+   "title": "X: originals",
+   "sub": "One post from the bank",
+   "goto": "x-post",
+   "x": 680,
+   "y": 100
+  },
+  {
+   "id": "x-tab",
+   "part": "part-own-tab",
+   "x": 0,
+   "y": 200
+  }
+ ],
+ "edges": [
+  {
+   "from": "x-start",
+   "to": "x-pick",
+   "type": "flow"
+  },
+  {
+   "from": "x-start",
+   "to": "x-acct",
+   "type": "flow"
+  },
+  {
+   "from": "x-pick",
+   "to": "x-reply-go",
+   "type": "flow",
+   "label": "replies"
+  },
+  {
+   "from": "x-pick",
+   "to": "x-post-go",
+   "type": "flow",
+   "label": "original"
+  },
+  {
+   "from": "x-tab",
+   "to": "x-start",
+   "type": "attach"
+  }
+ ]
+}

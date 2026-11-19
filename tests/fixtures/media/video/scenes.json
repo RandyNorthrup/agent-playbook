@@ -1,0 +1,48 @@
+[
+ {
+  "id": 1,
+  "start": 0.0,
+  "end": 2.0,
+  "text": "Your phone is face down.",
+  "prompt": "A phone lies face down on a wooden table beside a coffee cup, seen from above.",
+  "character": false,
+  "move": "push_in"
+ },
+ {
+  "id": 2,
+  "start": 2.0,
+  "end": 3.2,
+  "text": "It still wins.",
+  "prompt": "A small trophy stands on top of the face-down phone, with three short lines of shine around it.",
+  "character": false,
+  "move": "pan_right",
+  "label": "IT STILL WINS"
+ },
+ {
+  "id": 3,
+  "start": 3.2,
+  "end": 4.4,
+  "text": "Here is why.",
+  "prompt": "The guide points at a tall stack of books on a small table and raises one eyebrow.",
+  "character": true,
+  "move": "still"
+ },
+ {
+  "id": 4,
+  "start": 4.4,
+  "end": 5.8,
+  "text": "Flip it over.",
+  "prompt": "A hand turns the phone over on the table; the screen shows one plain round clock face.",
+  "character": false,
+  "move": "drift_up"
+ },
+ {
+  "id": 5,
+  "start": 5.8,
+  "end": 10.0,
+  "prompt": "END CARD",
+  "character": false,
+  "move": "still",
+  "end_card": true
+ }
+]

@@ -1,0 +1,92 @@
+{
+ "feed": [
+  {
+   "post": {
+    "uri": "at://did:plc:maker/app.bsky.feed.post/3ccc111",
+    "cid": "bafy3ccc111",
+    "author": {
+     "did": "did:plc:maker",
+     "handle": "maker.example",
+     "displayName": "maker"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "Top-level post in the feed",
+     "createdAt": "2026-11-09T08:00:00.000Z"
+    },
+    "replyCount": 2,
+    "repostCount": 0,
+    "likeCount": 7,
+    "indexedAt": "2026-11-09T08:00:00.000Z"
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:replier/app.bsky.feed.post/3ccc222",
+    "cid": "bafy3ccc222",
+    "author": {
+     "did": "did:plc:replier",
+     "handle": "replier.example",
+     "displayName": "replier"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "A reply that the feed also lists",
+     "createdAt": "2026-11-09T09:00:00.000Z",
+     "reply": {
+      "root": {
+       "uri": "at://did:plc:maker/app.bsky.feed.post/3ccc111"
+      },
+      "parent": {
+       "uri": "at://did:plc:maker/app.bsky.feed.post/3ccc111"
+      }
+     }
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 90,
+    "indexedAt": "2026-11-09T09:00:00.000Z"
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:old/app.bsky.feed.post/3ccc333",
+    "cid": "bafy3ccc333",
+    "author": {
+     "did": "did:plc:old",
+     "handle": "old.example",
+     "displayName": "old"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "From last week",
+     "createdAt": "2026-11-02T08:00:00.000Z"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 300,
+    "indexedAt": "2026-11-02T08:00:00.000Z"
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:maker/app.bsky.feed.post/3ccc111",
+    "cid": "bafy3ccc111",
+    "author": {
+     "did": "did:plc:maker",
+     "handle": "maker.example",
+     "displayName": "maker"
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "text": "Top-level post in the feed",
+     "createdAt": "2026-11-09T08:00:00.000Z"
+    },
+    "replyCount": 2,
+    "repostCount": 0,
+    "likeCount": 7,
+    "indexedAt": "2026-11-09T08:00:00.000Z"
+   }
+  }
+ ]
+}

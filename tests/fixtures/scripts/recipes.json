@@ -1,0 +1,182 @@
+{
+ "about": "Recipes for the run.py tests: an isolated copy, so the tests don't depend on the shipped playbook.",
+ "recipes": {
+  "post": {
+   "title": "One original post",
+   "when": "post something",
+   "actions": [
+    "post"
+   ],
+   "flows": [
+    "ground-rules",
+    "pacing",
+    "qc"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Ground rules read",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "facts",
+     "text": "Every claim from a source read this session",
+     "flow": "qc"
+    },
+    {
+     "id": "qc",
+     "text": "qc.py check passed",
+     "flow": "qc"
+    },
+    {
+     "id": "gap",
+     "text": "audit.py gap says READY",
+     "flow": "pacing"
+    },
+    {
+     "id": "live",
+     "text": "Checked live",
+     "part": "part-verify-live"
+    },
+    {
+     "id": "logged",
+     "text": "audit.py add",
+     "flow": "audit"
+    },
+    {
+     "id": "report",
+     "text": "Report: link and any warnings",
+     "flow": "qc"
+    }
+   ]
+  },
+  "reply": {
+   "title": "Reply run",
+   "when": "reply to everyone",
+   "actions": [
+    "reply"
+   ],
+   "flows": [
+    "ground-rules",
+    "qc"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Ground rules read",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "x",
+     "text": "X replies handled",
+     "flow": "x-reply"
+    },
+    {
+     "id": "logged",
+     "text": "Every reply logged",
+     "flow": "audit"
+    },
+    {
+     "id": "report",
+     "text": "Report",
+     "flow": "qc"
+    }
+   ]
+  },
+  "news-share": {
+   "title": "Share a news finding",
+   "when": "post news",
+   "actions": [
+    "post"
+   ],
+   "flows": [
+    "ground-rules",
+    "qc"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Ground rules read",
+     "flow": "ground-rules"
+    },
+    {
+     "id": "find",
+     "text": "A finding picked",
+     "flow": "x-post"
+    },
+    {
+     "id": "qc",
+     "text": "qc.py check passed",
+     "flow": "qc"
+    },
+    {
+     "id": "live",
+     "text": "Checked live",
+     "part": "part-verify-live"
+    },
+    {
+     "id": "logged",
+     "text": "audit.py add",
+     "flow": "audit"
+    },
+    {
+     "id": "report",
+     "text": "Report",
+     "flow": "qc"
+    }
+   ]
+  },
+  "group-post": {
+   "title": "A post in a group, paced",
+   "when": "post in the groups",
+   "actions": [
+    "post"
+   ],
+   "flows": [
+    "pacing",
+    "qc"
+   ],
+   "steps": [
+    {
+     "id": "start",
+     "text": "Group picked by the pacing clock",
+     "flow": "pacing"
+    },
+    {
+     "id": "qc",
+     "text": "qc.py check passed",
+     "flow": "qc"
+    },
+    {
+     "id": "mark",
+     "text": "pace.py --mark <slug>",
+     "flow": "pacing"
+    },
+    {
+     "id": "logged",
+     "text": "audit.py add",
+     "flow": "audit"
+    }
+   ]
+  },
+  "lesson": {
+   "title": "Put a lesson into the playbook",
+   "when": "a new rule",
+   "flows": [
+    "playbook"
+   ],
+   "steps": [
+    {
+     "id": "where",
+     "text": "The piece picked",
+     "flow": "playbook"
+    },
+    {
+     "id": "check",
+     "text": "pb.py check --strict exits 0",
+     "flow": "playbook"
+    }
+   ]
+  }
+ }
+}

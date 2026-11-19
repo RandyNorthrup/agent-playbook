@@ -1,0 +1,122 @@
+{
+ "name": "Growth round",
+ "group": "Start here",
+ "icon": "loop",
+ "summary": "A full round: caps first, then the reply pass on every platform, one original each, and the close.",
+ "order": 2,
+ "nodes": [
+  {
+   "id": "round-start",
+   "kind": "start",
+   "title": "Round starts",
+   "sub": "Ground rules read this session",
+   "body": "- Open a checklist: `python scripts/run.py start --recipe round`.\n- Each step ends done with evidence, or skipped with a reason.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "round-caps",
+   "kind": "step",
+   "title": "Caps and pacing",
+   "sub": "Know the room before writing",
+   "body": "- `python playbook/audit.py today` against the caps in flow pacing.\n- A platform at its cap gets replies only.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "round-pick",
+   "kind": "decision",
+   "title": "Which pass?",
+   "sub": "Replies first, then originals",
+   "body": "- **replies:** everyone waiting, on every platform.\n- **originals:** one per platform, from the post bank.",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "round-x",
+   "kind": "goto",
+   "title": "X",
+   "sub": "Replies and originals on X",
+   "goto": "x",
+   "x": 1020,
+   "y": -200
+  },
+  {
+   "id": "round-bsky",
+   "kind": "goto",
+   "title": "Bluesky",
+   "sub": "Notifications and replies",
+   "goto": "bluesky",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "round-reddit",
+   "kind": "goto",
+   "title": "Reddit",
+   "sub": "Questions the owner's app answers",
+   "goto": "reddit",
+   "x": 1020,
+   "y": 200
+  },
+  {
+   "id": "round-close",
+   "kind": "step",
+   "title": "Close the round",
+   "sub": "Every item logged, the run finished",
+   "body": "- `python scripts/run.py finish` refuses while a step is open.\n- Its list of skips, pace flags and QC warnings goes in the report.",
+   "x": 1020,
+   "y": 400
+  },
+  {
+   "id": "round-audit",
+   "kind": "goto",
+   "title": "Audit log",
+   "sub": "Log and verify what went out",
+   "goto": "audit",
+   "x": 1360,
+   "y": 400
+  }
+ ],
+ "edges": [
+  {
+   "from": "round-start",
+   "to": "round-caps",
+   "type": "flow"
+  },
+  {
+   "from": "round-caps",
+   "to": "round-pick",
+   "type": "flow"
+  },
+  {
+   "from": "round-pick",
+   "to": "round-x",
+   "type": "flow",
+   "label": "X"
+  },
+  {
+   "from": "round-pick",
+   "to": "round-bsky",
+   "type": "flow",
+   "label": "Bluesky"
+  },
+  {
+   "from": "round-pick",
+   "to": "round-reddit",
+   "type": "flow",
+   "label": "Reddit"
+  },
+  {
+   "from": "round-pick",
+   "to": "round-close",
+   "type": "flow",
+   "label": "done"
+  },
+  {
+   "from": "round-close",
+   "to": "round-audit",
+   "type": "flow"
+  }
+ ]
+}

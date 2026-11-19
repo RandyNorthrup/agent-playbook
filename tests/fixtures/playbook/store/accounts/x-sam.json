@@ -1,0 +1,21 @@
+{
+ "platform": "X",
+ "handle": "@sam",
+ "label": "Main account",
+ "owner": "Sam",
+ "status": "active",
+ "flow": "posting",
+ "purpose": "Posts and replies about the project.",
+ "pacing": "A few replies a day.",
+ "login": "The owner signs in.",
+ "url": "https://x.com/sam",
+ "projects": [
+  "posting"
+ ],
+ "notes": [
+  "Never follow back automatically."
+ ],
+ "src": [
+  "fixture"
+ ]
+}

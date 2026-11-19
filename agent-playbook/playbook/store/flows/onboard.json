@@ -1,0 +1,110 @@
+{
+ "name": "Set up a new machine",
+ "group": "Start here",
+ "icon": "box",
+ "summary": "First run on a new machine: the setup check, the canvas shortcut, the owner's accounts and folders.",
+ "order": 5,
+ "nodes": [
+  {
+   "id": "ob-start",
+   "kind": "start",
+   "title": "New machine or new owner",
+   "sub": "Python 3.8+ and Google Chrome installed",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "ob-doctor",
+   "kind": "step",
+   "title": "Run the setup check",
+   "sub": "Python, Chrome, clipboard, public APIs",
+   "body": "`python scripts/doctor.py` prints one line per check and exits 1 if any fails.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "ob-shortcut",
+   "kind": "step",
+   "title": "Add the canvas shortcut",
+   "sub": "Desktop and Start menu",
+   "body": "- `python playbook/install_shortcut.py` (`--remove` takes it away).\n- Any OS: `python playbook/launch.pyw`.",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "ob-accounts",
+   "kind": "step",
+   "title": "Register the accounts",
+   "sub": "Handles only: never passwords or emails",
+   "body": "- Canvas: **Accounts**, then **Add account**, or duplicate the demo ones and edit them.\n- Delete the demo accounts once yours are in.",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "ob-folders",
+   "kind": "step",
+   "title": "Point the folders at real paths",
+   "sub": "Screenshots, art, drafts",
+   "body": "Canvas: **Folders**, then edit each path. Every step that uses a folder picks up the change.",
+   "folders": [
+    "screenshots",
+    "drafts"
+   ],
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "ob-check",
+   "kind": "check",
+   "title": "Check the playbook",
+   "sub": "Clean before the first run",
+   "body": "`python playbook/pb.py check --strict` after the edits.",
+   "checks": [
+    "pb.py check --strict exits 0"
+   ],
+   "x": 1700,
+   "y": 0
+  },
+  {
+   "id": "ob-done",
+   "kind": "output",
+   "title": "Ready for a first run",
+   "sub": "Start with the reply recipe",
+   "x": 2040,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "ob-start",
+   "to": "ob-doctor",
+   "type": "flow"
+  },
+  {
+   "from": "ob-doctor",
+   "to": "ob-shortcut",
+   "type": "flow"
+  },
+  {
+   "from": "ob-shortcut",
+   "to": "ob-accounts",
+   "type": "flow"
+  },
+  {
+   "from": "ob-accounts",
+   "to": "ob-folders",
+   "type": "flow"
+  },
+  {
+   "from": "ob-folders",
+   "to": "ob-check",
+   "type": "flow"
+  },
+  {
+   "from": "ob-check",
+   "to": "ob-done",
+   "type": "flow",
+   "label": "pass"
+  }
+ ]
+}

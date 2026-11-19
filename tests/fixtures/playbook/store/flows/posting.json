@@ -1,0 +1,58 @@
+{
+ "name": "Posting",
+ "group": "Platforms",
+ "icon": "x",
+ "summary": "Write one post, check it, publish it.",
+ "order": 1,
+ "nodes": [
+  {
+   "id": "posting-start",
+   "kind": "start",
+   "title": "Write the post",
+   "body": "Write it fresh for this platform.",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "posting-readback",
+   "part": "part-read-back",
+   "x": 320,
+   "y": 0
+  },
+  {
+   "id": "posting-account",
+   "kind": "account",
+   "title": "@sam",
+   "sub": "The main account",
+   "account": "x-sam",
+   "x": 320,
+   "y": 200
+  },
+  {
+   "id": "posting-live",
+   "kind": "output",
+   "title": "Post is live",
+   "body": "Log it in the audit log.",
+   "x": 640,
+   "y": 0
+  }
+ ],
+ "edges": [
+  {
+   "from": "posting-start",
+   "to": "posting-readback",
+   "type": "flow"
+  },
+  {
+   "from": "posting-start",
+   "to": "posting-account",
+   "type": "flow"
+  },
+  {
+   "from": "posting-readback",
+   "to": "posting-live",
+   "type": "flow",
+   "label": "pass"
+  }
+ ]
+}

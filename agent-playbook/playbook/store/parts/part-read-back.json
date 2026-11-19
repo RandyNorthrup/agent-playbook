@@ -1,0 +1,12 @@
+{
+ "kind": "check",
+ "title": "Read the composer back",
+ "sub": "Before Post, Share, Publish or Schedule",
+ "body": "Read the field back (`browser_find` or `browser_get_value`) before sending.",
+ "checks": [
+  "The text in the field is the text you meant, in full",
+  "The active account is the right one",
+  "The link card comes from the right link",
+  "The account hasn't already replied"
+ ]
+}

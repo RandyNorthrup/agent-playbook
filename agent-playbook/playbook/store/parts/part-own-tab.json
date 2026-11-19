@@ -1,0 +1,6 @@
+{
+ "kind": "tool",
+ "title": "Own browser tab",
+ "sub": "Agent name, tab_id on every call",
+ "body": "- Open your own tab with a short agent name and pass its tab_id on every call.\n- Never navigate, close or type in the owner's tabs.\n- When done: close your tab and release the browser."
+}

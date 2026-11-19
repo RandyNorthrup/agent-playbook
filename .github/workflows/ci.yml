@@ -1,0 +1,61 @@
+name: tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.8", "3.12"]
+        # ubuntu-latest no longer ships Python 3.8; test 3.8 on the last Ubuntu image that has it.
+        exclude:
+          - os: ubuntu-latest
+            python: "3.8"
+        include:
+          - os: ubuntu-22.04
+            python: "3.8"
+          - os: ubuntu-latest
+            python: "3.14"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Tests
+        run: python -m unittest discover -s tests -v
+      # Schema and lint over the real playbook: zero errors and zero warnings.
+      - name: Playbook check
+        run: python agent-playbook/playbook/pb.py check --strict
+      - name: Store is in canonical form
+        run: python agent-playbook/playbook/pb.py normalize --check
+      # playbook.html is built from app/playbook.src.html: rebuild it and fail if the tracked file is stale.
+      - name: Page build is fresh
+        run: |
+          python agent-playbook/playbook/app/build_page.py
+          git diff --exit-code -- agent-playbook/playbook/playbook.html
+  # The rows above have no Pillow, numpy or ffmpeg, so the media tests that need them skip there. This row
+  # installs all three and sets AGENT_PLAYBOOK_REQUIRE_MEDIA=1, which turns any such skip into a failure.
+  media:
+    runs-on: ubuntu-latest
+    env:
+      AGENT_PLAYBOOK_REQUIRE_MEDIA: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: ffmpeg, Pillow and numpy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install Pillow numpy
+      - name: Tests
+        run: python -m unittest discover -s tests -v

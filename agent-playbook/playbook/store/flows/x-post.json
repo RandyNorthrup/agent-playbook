@@ -1,0 +1,109 @@
+{
+ "name": "X: originals",
+ "group": "Platforms",
+ "icon": "megaphone",
+ "summary": "One original post on X from the post bank: pick, QC, publish, check it live, log.",
+ "order": 3,
+ "nodes": [
+  {
+   "id": "xp-start",
+   "kind": "start",
+   "title": "An original is due",
+   "sub": "Under today's cap",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": "xp-bank",
+   "kind": "step",
+   "title": "Pick from the post bank",
+   "sub": "Fresh news first, then tips",
+   "body": "- `python scripts/bank.py check` lists each entry with its length per platform.\n- `python scripts/bank.py x <key>` prints the X version.",
+   "x": 340,
+   "y": 0
+  },
+  {
+   "id": "xp-qc",
+   "part": "part-qc-check",
+   "x": 680,
+   "y": 0
+  },
+  {
+   "id": "xp-read",
+   "part": "part-read-back",
+   "x": 1020,
+   "y": 0
+  },
+  {
+   "id": "xp-live",
+   "part": "part-verify-live",
+   "x": 1360,
+   "y": 0
+  },
+  {
+   "id": "xp-log",
+   "part": "part-log",
+   "x": 1700,
+   "y": 0
+  },
+  {
+   "id": "xp-done",
+   "kind": "output",
+   "title": "Original is live",
+   "sub": "Logged with its link",
+   "x": 2040,
+   "y": 0
+  },
+  {
+   "id": "xp-bankfile",
+   "kind": "tool",
+   "title": "The post bank",
+   "sub": "playbook/state/bank.tsv",
+   "body": "One post per line: key, text, optional link. Add to it whenever a good idea comes up.",
+   "folders": [
+    "post-bank"
+   ],
+   "x": 340,
+   "y": 200
+  }
+ ],
+ "edges": [
+  {
+   "from": "xp-start",
+   "to": "xp-bank",
+   "type": "flow"
+  },
+  {
+   "from": "xp-bank",
+   "to": "xp-qc",
+   "type": "flow"
+  },
+  {
+   "from": "xp-qc",
+   "to": "xp-read",
+   "type": "flow",
+   "label": "pass"
+  },
+  {
+   "from": "xp-read",
+   "to": "xp-live",
+   "type": "flow",
+   "label": "posted"
+  },
+  {
+   "from": "xp-live",
+   "to": "xp-log",
+   "type": "flow"
+  },
+  {
+   "from": "xp-log",
+   "to": "xp-done",
+   "type": "flow"
+  },
+  {
+   "from": "xp-bankfile",
+   "to": "xp-bank",
+   "type": "attach"
+  }
+ ]
+}
